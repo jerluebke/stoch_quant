@@ -3,6 +3,8 @@
 from math import sqrt
 import numpy as np
 from scipy.ndimage import convolve1d
+from matplotlib import pyplot as plt
+from matplotlib import animation
 
 np.random.seed(100)     # for reproducibility
 
@@ -55,12 +57,12 @@ class Simulation:
         after the simulation is done.
         """
         self.grid = grid
+        self.h = h
         self.params = dict(
             dV  =   dV,
             dtau=   dtau,
             a   =   a,
             m   =   m,
-            h   =   h,
             x0  =   x0,
         )
         self.arrays = dict(
@@ -82,10 +84,10 @@ class Simulation:
         """Performing one tau-step """
         # pull parameters and arrays into local scope to prevent littering the
         # code with `self`
-        dV, x0, dtau, a, m, h = self.params.values()
+        dV, x0, dtau, a, m = self.params.values()
         # arrays are passed as references, so `self.x`, etc. are updated
         # automatically
-        x, xh, Lx, Lxh = self.arrays.values()
+        x, xh, L = self.arrays.values()
 
         # create noise
         R = sqrt(2*dtau/a) * np.random.normal(0., 1., self.grid)
@@ -96,10 +98,10 @@ class Simulation:
 
         # advancing xh
         L = Lap(xh, L, a)
-        xh = xh + m*dtau*(L - omega_sq*x) + R
+        xh = xh + m*dtau*(L - dV(xh, x0)) + R
 
         # fix source in xh
-        xh[0] += dtau*h
+        xh[0] += dtau*self.h
 
         # update sums and number of steps
         # TODO: wait for equilibrium?
@@ -153,10 +155,10 @@ def animate(i):
 
     avg_line.set_data(grid, avg)
     cor_line.set_data(grid, cor)
-    slope_line.set_data(grid, log_slope)
+    slope_line.set_data(grid[1:], log_slope)
     avg_line_eq.set_data(grid, avg_eq)
     cor_line_eq.set_data(grid, cor_eq)
-    slope_line_eq.set_data(grid, log_slope_eq)
+    slope_line_eq.set_data(grid[1:], log_slope_eq)
 
     print(sim.steps)
 
@@ -176,18 +178,22 @@ sim = Simulation(**parabolic_kwds)
 
 
 fig = plt.figure()
-a, c, s, ae, ce, se = fig.subplots(2, 3, sharex=True)
+(a, c, s), (ae, ce, se) = fig.subplots(2, 3, sharex=True)
 
-for ax, ti in zip([a, c, s, ae, ce, se],
-                  ["avg", "cor", "slope", "avg-eq", "cor-eq", "slope-eq"]):
-    ax.set(title=ti)
+for ax, ti, y in zip([a, c, s, ae, ce, se],
+                     ["avg", "cor", "slope", "avg-eq", "cor-eq", "slope-eq"],
+                     [0.01, 0.1, 2, 0.01, 0.1, 2]
+                    ):
+    ax.set_title(ti)
+    ax.set_xlim(0, grid[-1])
+    ax.set_ylim(-y, y)
 
-avg_line        = a.plot([], []),
-cor_line        = c.plot([], []),
-slope_line      = s.plot([], []),
-avg_line_eq     = ae.plot([], []),
-cor_line_eq     = ce.plot([], []),
-slope_line_eq   = se.plot([], []),
+avg_line,       = a.plot([], [])
+cor_line,       = c.plot([], [])
+slope_line,     = s.plot([], [])
+avg_line_eq,    = ae.plot([], [])
+cor_line_eq,    = ce.plot([], [])
+slope_line_eq,  = se.plot([], [])
 
 
 #  FFWriter = animation.FFMpegWriter(fps=10)
