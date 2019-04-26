@@ -10,7 +10,7 @@ np.random.seed(100)     # for reproducibility
 
 
 
-LAP_1D_STENCIL = np.array([1., -4., 1.])
+LAP_1D_STENCIL = np.array([1., -2., 1.])
 
 def Lap(a, o, dx):
     """Laplacian
@@ -26,12 +26,13 @@ def Lap(a, o, dx):
 
     The boundaries are filled with zeros.
     """
-    return convolve1d(a, LAP_1D_STENCIL, output=o, mode='constant') / dx**2
+    convolve1d(a, LAP_1D_STENCIL, output=o, mode='wrap')
+    return np.divide(o, dx**2, out=o)
 
 
 
 class Simulation:
-    def __init__(self, dV, grid, dtau, a, m=1., h=1e-6, x0=0., eq=1000):
+    def __init__(self, dV, grid, dtau, a, m=1., h=1e-6, x0=0., eq=1_000):
         """Initializing the Simulation
 
         Params
@@ -94,11 +95,11 @@ class Simulation:
 
         # advancing x
         L = Lap(x, L, a)
-        x = x + m*dtau*(L - dV(x, x0)) + R
+        x += dtau*(m*L - dV(x, x0)) + R
 
         # advancing xh
         L = Lap(xh, L, a)
-        xh = xh + m*dtau*(L - dV(xh, x0)) + R
+        xh += dtau*(m*L - dV(xh, x0)) + R
 
         # fix source in xh
         xh[0] += dtau*self.h
@@ -143,7 +144,7 @@ def init():
     return avg_line, cor_line, slope_line, avg_line_eq, cor_line_eq, slope_line_eq
 
 def animate(i):
-    sim.multistep(2000)
+    sim.multistep(1000)
 
     avg = sim.x_sum / sim.steps
     cor = (sim.xh_sum - sim.x_sum) / sim.steps / sim.h
@@ -175,6 +176,7 @@ parabolic_kwds = dict(
     a   = dt,
 )
 sim = Simulation(**parabolic_kwds)
+#  sim.multistep(1_000)
 
 
 fig = plt.figure()
@@ -182,7 +184,7 @@ fig = plt.figure()
 
 for ax, ti, y in zip([a, c, s, ae, ce, se],
                      ["avg", "cor", "slope", "avg-eq", "cor-eq", "slope-eq"],
-                     [0.01, 0.1, 2, 0.01, 0.1, 2]
+                     [0.1, 0.1, 2, 0.1, 0.1, 2]
                     ):
     ax.set_title(ti)
     ax.set_xlim(0, grid[-1])

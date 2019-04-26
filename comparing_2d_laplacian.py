@@ -39,11 +39,14 @@ def ddf(x, y, fxy):
 
 
 
-def my_lap2d(a):
+def my_lap2d(a, o=None):
     """custom implementation for a 2d laplacian of an array `a`
     for reference: https://stackoverflow.com/a/4699973"""
     r, c = a.shape
-    L = np.zeros_like(a)
+    if o is None:
+        L = np.zeros_like(a)
+    else:
+        L = o
 
     # x component
     # left and right boundaries
@@ -73,7 +76,7 @@ def numba_lap_stencil(a, o):
 
 
 FUNCS = {
-    #  "my 2d laplacian "  :   my_lap2d,
+    "my 2d laplacian "  :   my_lap2d,
     #  "signal.convolve2d" :
     #      lambda a, o: signal.convolve2d(a, STENCIL, mode='same'),
     "ndimage.convolve"  :
@@ -82,7 +85,11 @@ FUNCS = {
     #      lambda a, o: ndimage.laplace(a, mode='constant', output=o),
     "numba stencil\t"   :
         #  lambda a, o: _numba_lap_stencil(a, out=o)
-        numba_lap_stencil
+        numba_lap_stencil,
+    "numpy roll\t"      :
+        lambda a, o: np.roll(a, -1, 0) + np.roll(a, 1, 0) \
+                   + np.roll(a, -1, 1) + np.roll(a, 1, 1) \
+                   - 4*a
 }
 
 
@@ -100,7 +107,7 @@ def main():
 
         for name, func in FUNCS.items():
             t = timeit('f(a, o)', number=ITERATIONS,
-                       setup='f(a, o)',
+                       setup='f(a, o)', # run it once to make sure it is compiled
                        globals=dict(a=fxy, f=func, o=lap_num)) / ITERATIONS
             lap_num = func(fxy, lap_num) / step**2
             err = np.max(np.abs(lap_num-lap_ana))
