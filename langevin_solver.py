@@ -5,6 +5,7 @@ import numpy as np
 from scipy.ndimage import convolve1d
 from matplotlib import pyplot as plt
 from matplotlib import animation
+from collections import OrderedDict
 
 np.random.seed(100)     # for reproducibility
 
@@ -32,7 +33,7 @@ def Lap(a, o, dx):
 
 
 class Simulation:
-    def __init__(self, dV, grid, dtau, a, m=1., h=1e-6, x0=0., eq=1_000):
+    def __init__(self, dV, grid, dtau, a, m=1., h=1e-6, x0=0.):
         """Initializing the Simulation
 
         Params
@@ -50,80 +51,82 @@ class Simulation:
         The simulation state is encoded in the arrays `x` and `xh` and the
         integer `steps`.
 
-        Additionally the array `L` is provided to store the currently used
-        Laplacian; it is used for both `Lap(x)` and `Lap(xh)`. This is done to
-        prevent unnecessary allocations of memory.
+        Additionally the arrays `L` and `Lh` are provided to store the
+        Laplacian of `x` and `xh` respectivly.
+
+        `xold` is used to compare `x` after each step to check for stability
+        and rescale dtau if necessary.
 
         The arrays `x_sum`, `xh_sum` are used for computing the average in tau
         after the simulation is done.
         """
         self.grid = grid
-        self.h = h
-        self.params = dict(
+        self.params = OrderedDict(
             dV  =   dV,
             dtau=   dtau,
             a   =   a,
             m   =   m,
+            h   =   h,
             x0  =   x0,
         )
-        self.arrays = dict(
+        self.arrays = OrderedDict(
             x   =   np.zeros(grid),
+            xold=   np.zeros(grid),
             xh  =   np.zeros(grid),
             L   =   np.zeros(grid),
+            Lh  =   np.zeros(grid),
         )
         self.x_sum  = np.zeros(grid)
         self.xh_sum = np.zeros(grid)
         self.steps  = 0
-        # TODO: remove later
-        self.eq = eq
-        self.x_sum_eq  = np.zeros(grid)
-        self.xh_sum_eq = np.zeros(grid)
-        self.steps_eq = 0
 
 
     def step(self):
         """Performing one tau-step """
         # pull parameters and arrays into local scope to prevent littering the
         # code with `self`
-        dV, x0, dtau, a, m = self.params.values()
+        dV, dtau, a, m, h, x0 = self.params.values()
+
         # arrays are passed as references, so `self.x`, etc. are updated
         # automatically
-        #  x, xh, L = self.arrays.values()
-        x = self.arrays['x']
-        xh = self.arrays['xh']
-        #  L = self.arrays['L']
+        x, xold, xh, L, Lh = self.arrays.values()
 
-        # create noise
-        R = sqrt(2*dtau/a) * np.random.normal(0., 1., self.grid)
+        # make copy of current x for stability check
+        np.copyto(xold, x)
 
-        # advancing x
-        #  Lap(x, L, a)
-        #  Lroll = (np.roll(x, 1) - 2*x + np.roll(x, -1)) / a**2
-        #  x += dtau*(m*L - dV(x, x0)) + R
-        x += dtau * m * (np.roll(x, 1) - 2*x + np.roll(x, -1)) / a**2 - dtau * dV(x, x0) + R
+        while True:
+            # create noise
+            R = sqrt(2*dtau/a) * np.random.normal(0., 1., self.grid)
+
+            # advancing x
+            Lap(xold, L, a)
+            x[:] = xold + dtau * m * L - dtau * dV(xold, x0) + R
+
+            # rescaling dtau for stability
+            # get max value and its coordinates of new x
+            xmax = np.max(np.abs(x))
+            ind = np.unravel_index(x.argmax(), x.shape)
+
+            # difference by which x is changed (without noise) must not be
+            # larger than the max value of x (as an estimate for stability)
+            if (x - xold - R)[ind] > xmax:
+                dtau *= 0.95
+                print('new dtau = %e' % dtau)
+                self.params['dtau'] = dtau
+            else:
+                break
 
         # advancing xh
-        #  Lap(xh, L, a)
-        #  Lrollh = (np.roll(xh, 1) - 2*xh + np.roll(xh, -1)) / a**2
-        #  xh += dtau*(m*L - dV(xh, x0)) + R
-        #  nxh = xh + dtau * m * (np.roll(xh, 1) - 2*xh + np.roll(xh, -1)) / a**2 - dtau * dV(xh, x0) + R
-        xh += dtau * m * (np.roll(xh, 1) - 2*xh + np.roll(xh, -1)) / a**2 - dtau * dV(x, x0) + R
+        Lap(xh, Lh, a)
+        xh += dtau * m * Lh - dtau * dV(xh, x0) + R
 
         # fix source in xh
-        xh[0] += dtau*self.h
+        xh[0] += dtau * h
 
         # update sums and number of steps
         # TODO: wait for equilibrium?
-        # TODO: adjust tau?
         self.x_sum += x
         self.xh_sum += xh
-
-        # TODO: remove later
-        #  if self.steps > self.eq:
-        #      self.x_sum_eq += x
-        #      self.xh_sum_eq += xh
-        #      self.steps_eq += 1
-
         self.steps += 1
 
 
@@ -133,9 +136,23 @@ class Simulation:
             self.step()
 
 
+    @staticmethod
+    def _compute_slope(x, dx):
+        return (x[1:] - x[:-1]) / dx
 
-def compute_slope(x, dx):
-    return (x[1:] - x[:-1]) / dx
+    @property
+    def x_average(self):
+        return self.x_sum / self.steps
+
+    @property
+    def x0_x_correlation(self):
+        return (self.xh_sum - self.x_sum) / self.steps / self.params['h']
+
+    @property
+    def log_slope(self):
+        return self._compute_slope(np.log(self.x0_x_correlation),
+                                   self.params['a'])
+
 
 
 def dV_parabolic(x, *unused):
@@ -151,13 +168,9 @@ def init():
 def animate(i):
     sim.multistep(1000)
 
-    avg = sim.x_sum / sim.steps
-    cor = (sim.xh_sum - sim.x_sum) / sim.steps / sim.h
-    log_slope = compute_slope(np.log(cor), sim.params['a'])
-
-    avg_line.set_data(grid, avg)
-    cor_line.set_data(grid, cor)
-    slope_line.set_data(grid[1:], log_slope)
+    avg_line.set_data(grid, sim.x_average)
+    cor_line.set_data(grid, sim.x0_x_correlation)
+    slope_line.set_data(grid[1:], sim.log_slope)
 
     print(sim.steps)
 
@@ -170,11 +183,10 @@ grid = np.arange(0, 128*dt, dt)
 parabolic_kwds = dict(
     dV  = dV_parabolic,
     grid= grid.shape,
-    dtau= 0.001,
+    dtau= 0.1,
     a   = dt,
 )
 sim = Simulation(**parabolic_kwds)
-#  sim.multistep(1_000)
 
 
 fig = plt.figure()
@@ -182,7 +194,7 @@ a, c, s = fig.subplots(1, 3)
 
 for ax, ti, y in zip([a, c, s],
                      ["avg", "cor", "slope"],
-                     [1., 100., 100.]
+                     [0.5, 0.1, 2.]
                     ):
     ax.set_title(ti)
     ax.set_xlim(0, grid[-1])
