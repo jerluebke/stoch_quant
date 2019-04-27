@@ -88,18 +88,26 @@ class Simulation:
         dV, x0, dtau, a, m = self.params.values()
         # arrays are passed as references, so `self.x`, etc. are updated
         # automatically
-        x, xh, L = self.arrays.values()
+        #  x, xh, L = self.arrays.values()
+        x = self.arrays['x']
+        xh = self.arrays['xh']
+        #  L = self.arrays['L']
 
         # create noise
         R = sqrt(2*dtau/a) * np.random.normal(0., 1., self.grid)
 
         # advancing x
-        L = Lap(x, L, a)
-        x += dtau*(m*L - dV(x, x0)) + R
+        #  Lap(x, L, a)
+        #  Lroll = (np.roll(x, 1) - 2*x + np.roll(x, -1)) / a**2
+        #  x += dtau*(m*L - dV(x, x0)) + R
+        x += dtau * m * (np.roll(x, 1) - 2*x + np.roll(x, -1)) / a**2 - dtau * dV(x, x0) + R
 
         # advancing xh
-        L = Lap(xh, L, a)
-        xh += dtau*(m*L - dV(xh, x0)) + R
+        #  Lap(xh, L, a)
+        #  Lrollh = (np.roll(xh, 1) - 2*xh + np.roll(xh, -1)) / a**2
+        #  xh += dtau*(m*L - dV(xh, x0)) + R
+        #  nxh = xh + dtau * m * (np.roll(xh, 1) - 2*xh + np.roll(xh, -1)) / a**2 - dtau * dV(xh, x0) + R
+        xh += dtau * m * (np.roll(xh, 1) - 2*xh + np.roll(xh, -1)) / a**2 - dtau * dV(x, x0) + R
 
         # fix source in xh
         xh[0] += dtau*self.h
@@ -111,10 +119,10 @@ class Simulation:
         self.xh_sum += xh
 
         # TODO: remove later
-        if self.steps > self.eq:
-            self.x_sum_eq += x
-            self.xh_sum_eq += xh
-            self.steps_eq += 1
+        #  if self.steps > self.eq:
+        #      self.x_sum_eq += x
+        #      self.xh_sum_eq += xh
+        #      self.steps_eq += 1
 
         self.steps += 1
 
@@ -138,10 +146,7 @@ def init():
     avg_line.set_data([], [])
     cor_line.set_data([], [])
     slope_line.set_data([], [])
-    avg_line_eq.set_data([], [])
-    cor_line_eq.set_data([], [])
-    slope_line_eq.set_data([], [])
-    return avg_line, cor_line, slope_line, avg_line_eq, cor_line_eq, slope_line_eq
+    return avg_line, cor_line, slope_line
 
 def animate(i):
     sim.multistep(1000)
@@ -150,20 +155,13 @@ def animate(i):
     cor = (sim.xh_sum - sim.x_sum) / sim.steps / sim.h
     log_slope = compute_slope(np.log(cor), sim.params['a'])
 
-    avg_eq = sim.x_sum_eq / sim.steps_eq
-    cor_eq = (sim.xh_sum_eq - sim.x_sum_eq) / sim.steps_eq / sim.h
-    log_slope_eq = compute_slope(np.log(cor_eq), sim.params['a'])
-
     avg_line.set_data(grid, avg)
     cor_line.set_data(grid, cor)
     slope_line.set_data(grid[1:], log_slope)
-    avg_line_eq.set_data(grid, avg_eq)
-    cor_line_eq.set_data(grid, cor_eq)
-    slope_line_eq.set_data(grid[1:], log_slope_eq)
 
     print(sim.steps)
 
-    return avg_line, cor_line, slope_line, avg_line_eq, cor_line_eq, slope_line_eq
+    return avg_line, cor_line, slope_line
 
 
 
@@ -172,7 +170,7 @@ grid = np.arange(0, 128*dt, dt)
 parabolic_kwds = dict(
     dV  = dV_parabolic,
     grid= grid.shape,
-    dtau= 0.1,
+    dtau= 0.001,
     a   = dt,
 )
 sim = Simulation(**parabolic_kwds)
@@ -180,11 +178,11 @@ sim = Simulation(**parabolic_kwds)
 
 
 fig = plt.figure()
-(a, c, s), (ae, ce, se) = fig.subplots(2, 3, sharex=True)
+a, c, s = fig.subplots(1, 3)
 
-for ax, ti, y in zip([a, c, s, ae, ce, se],
-                     ["avg", "cor", "slope", "avg-eq", "cor-eq", "slope-eq"],
-                     [0.1, 0.1, 2, 0.1, 0.1, 2]
+for ax, ti, y in zip([a, c, s],
+                     ["avg", "cor", "slope"],
+                     [1., 100., 100.]
                     ):
     ax.set_title(ti)
     ax.set_xlim(0, grid[-1])
@@ -193,9 +191,6 @@ for ax, ti, y in zip([a, c, s, ae, ce, se],
 avg_line,       = a.plot([], [])
 cor_line,       = c.plot([], [])
 slope_line,     = s.plot([], [])
-avg_line_eq,    = ae.plot([], [])
-cor_line_eq,    = ce.plot([], [])
-slope_line_eq,  = se.plot([], [])
 
 
 #  FFWriter = animation.FFMpegWriter(fps=10)
