@@ -10,6 +10,12 @@ from collections import OrderedDict
 np.random.seed(100)     # for reproducibility
 
 
+#  POTENTIAL = 'parabolic'
+#  POTENTIAL = 'cosh'
+#  POTENTIAL = 'quartic'
+POTENTIAL = 'double_well'
+Nt = 128
+
 
 LAP_1D_STENCIL = np.array([1., -2., 1.])
 
@@ -111,7 +117,7 @@ class Simulation:
             # larger than the max value of x (as an estimate for stability)
             if (x - xold - R)[ind] > xmax:
                 dtau *= 0.95
-                print('new dtau = %e' % dtau)
+                #  print('new dtau = %e' % dtau)
                 self.params['dtau'] = dtau
             else:
                 break
@@ -158,12 +164,25 @@ class Simulation:
 def dV_parabolic(x, *unused):
     return x
 
+def dV_cosh(x, b):
+    V0 = 1.
+    return 2*b*V0*np.tanh(b*x) / np.cosh(b*x)**2
+
+def dV_double_well(x, x0):
+    #  return (x**3/x0**2 - x) / 2.
+    return 4*(x**3 - x*x0**2)
+
+def dV_quartic(x, mu):
+    return 4*mu*x**3
+
+
 
 def init():
     avg_line.set_data([], [])
     cor_line.set_data([], [])
     slope_line.set_data([], [])
     return avg_line, cor_line, slope_line
+
 
 def animate(i):
     sim.multistep(1000)
@@ -178,27 +197,55 @@ def animate(i):
 
 
 
-dt = 0.1
-grid = np.arange(0, 128*dt, dt)
-parabolic_kwds = dict(
-    dV  = dV_parabolic,
-    grid= grid.shape,
-    dtau= 0.1,
-    a   = dt,
+sim_kwds = dict(
+    default = dict(
+        grid= (Nt,),
+        dtau= 0.1,
+        a   = 0.1,
+    ),
+    parabolic = dict(
+        dV  = dV_parabolic,
+    ),    
+    cosh = dict(
+        dV  = dV_cosh,
+        x0  = 0.1,
+    ),
+    double_well = dict(
+        dV  = dV_double_well,
+        x0  = 4.,
+    ),
+    quartic = dict(
+        dV  = dV_quartic,
+        a   = 1.,   # overwriting default
+        x0  = 1.,
+    ),
 )
-sim = Simulation(**parabolic_kwds)
+
+plt_kwds = dict(
+    ylim = dict(
+        parabolic   = [(-1.5, 1.5), (0., 0.1), (-2., 2.)],
+        cosh        = [(-1.5, 0.5), (0., 1.), (-0.5, 0.5)],
+        double_well = [(-5., 5.), (0., 0.02), (-5., 5.)],
+        quartic     = [(-2., 2.), (0., 0.1), (-2., 2.)],
+    )
+)
+
+
+config_dict = {**sim_kwds['default'], **sim_kwds[POTENTIAL]}
+dt          = config_dict['a']
+grid        = np.arange(0, Nt*dt, dt)
+sim         = Simulation(**config_dict)
 
 
 fig = plt.figure()
 a, c, s = fig.subplots(1, 3)
 
-for ax, ti, y in zip([a, c, s],
-                     ["avg", "cor", "slope"],
-                     [0.5, 0.1, 2.]
-                    ):
+for ax, ti, ylim in zip([a, c, s],
+                        ["avg", "cor", "slope"],
+                        plt_kwds['ylim'][POTENTIAL]):
     ax.set_title(ti)
     ax.set_xlim(0, grid[-1])
-    ax.set_ylim(-y, y)
+    ax.set_ylim(ylim)
 
 avg_line,       = a.plot([], [])
 cor_line,       = c.plot([], [])
