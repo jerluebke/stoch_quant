@@ -10,10 +10,10 @@ from collections import OrderedDict
 np.random.seed(100)     # for reproducibility
 
 
-#  POTENTIAL = 'parabolic'
+POTENTIAL = 'parabolic'
 #  POTENTIAL = 'cosh'
 #  POTENTIAL = 'quartic'
-POTENTIAL = 'double_well'
+#  POTENTIAL = 'double_well'
 Nt = 128
 
 
@@ -117,7 +117,7 @@ class Simulation:
             # larger than the max value of x (as an estimate for stability)
             if (x - xold - R)[ind] > xmax:
                 dtau *= 0.95
-                #  print('new dtau = %e' % dtau)
+                print('new dtau = %e' % dtau)
                 self.params['dtau'] = dtau
             else:
                 break
@@ -189,9 +189,11 @@ def animate(i):
 
     avg_line.set_data(grid, sim.x_average)
     cor_line.set_data(grid, sim.x0_x_correlation)
-    slope_line.set_data(grid[1:], sim.log_slope)
+    log_slope = sim.log_slope
+    slope_line.set_data(grid[1:], log_slope)
 
-    print(sim.steps)
+    # TODO: give theoretical result and error, if available
+    print('%f\t|%d' % (-log_slope[1], sim.steps))
 
     return avg_line, cor_line, slope_line
 
@@ -205,7 +207,7 @@ sim_kwds = dict(
     ),
     parabolic = dict(
         dV  = dV_parabolic,
-    ),    
+    ),
     cosh = dict(
         dV  = dV_cosh,
         x0  = 0.1,
@@ -253,6 +255,7 @@ slope_line,     = s.plot([], [])
 
 
 #  FFWriter = animation.FFMpegWriter(fps=10)
+print('Energy\t\t|Steps\n======\t\t======')
 anim_obj = animation.FuncAnimation(fig, animate, init_func=init, blit=True)
 
 
