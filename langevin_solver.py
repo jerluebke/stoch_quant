@@ -10,10 +10,13 @@ from collections import OrderedDict
 np.random.seed(100)     # for reproducibility
 
 
-POTENTIAL = 'parabolic'
+#  POTENTIAL = 'parabolic'
 #  POTENTIAL = 'cosh'
 #  POTENTIAL = 'quartic'
 #  POTENTIAL = 'double_well'
+POTENTIAL = 'parabolic_with_peak'
+#  POTENTIAL = 'quartic_with_peak'
+#  POTENTIAL = 'false_vacuum'
 Nt = 128
 
 
@@ -33,13 +36,16 @@ def Lap(a, o, dx):
 
     The boundaries are filled with zeros.
     """
+    # periodic boundaries
     convolve1d(a, LAP_1D_STENCIL, output=o, mode='wrap')
+    # const boundaries = 0
+    #  convolve1d(a, LAP_1D_STENCIL, output=o, mode='constant')
     return np.divide(o, dx**2, out=o)
 
 
 
 class Simulation:
-    def __init__(self, dV, grid, dtau, a, m=1., h=1e-6, x0=0.):
+    def __init__(self, dV, grid, dtau, a, m=1., h=1e-6, x0=1.):
         """Initializing the Simulation
 
         Params
@@ -161,20 +167,42 @@ class Simulation:
 
 
 
-def dV_parabolic(x, *unused):
-    return x
+def dV_parabolic(x, a=1):
+    """ a/2 * x**2 """
+    return a*x
 
-def dV_cosh(x, b):
+def dV_cosh(x, b=0.1):
+    """ -V0 / cosh(b*x)**2 """
     V0 = 1.
-    return 2*b*V0*np.tanh(b*x) / np.cosh(b*x)**2
+    return -2*b*V0*np.tanh(b*x) / np.cosh(b*x)**2
 
-def dV_double_well(x, x0):
-    #  return (x**3/x0**2 - x) / 2.
-    return 4*(x**3 - x*x0**2)
+def dV_double_well(x, a=4.):
+    """ (x**2 - a**2) / 4 """
+    return x**3 - x*a**2
 
-def dV_quartic(x, mu):
-    return 4*mu*x**3
+def dV_quartic(x, mu=4.):
+    """ V = mu/4 * x**4 """
+    return mu*x**3
 
+def dV_parabolic_with_peak(x, *unused):
+    """ m/2 * x**2 + h * np.exp(-(x/sigma)**2) """
+    m = 1.
+    h = 10.
+    sigma = 0.5
+    return m*x - 2*x*h/sigma**2 * np.exp(-(x/sigma)**2)
+
+def dV_quartic_with_peak(x, *unused):
+    """ m/4 * x**4 + h * np.exp(-(x/sigma)**2) """
+    m = 1.
+    h = 10.
+    sigma = 0.5
+    return m*x**3 - 2*x*h/sigma**2 * np.exp(-(x/sigma)**2)
+
+def dV_false_vacuum(x, *unused):
+    """ 1/4 * (a**2 * x**2 - b**2)**2 - c*x + d """
+    a = b = 3.
+    c = 3.
+    return a**4 * x**3 - a**2 * b**2 * x - c
 
 
 def init():
@@ -207,28 +235,44 @@ sim_kwds = dict(
     ),
     parabolic = dict(
         dV  = dV_parabolic,
-    ),
-    cosh = dict(
-        dV  = dV_cosh,
-        x0  = 0.1,
-    ),
-    double_well = dict(
-        dV  = dV_double_well,
-        x0  = 4.,
+        #  x0  = 0.5,
     ),
     quartic = dict(
         dV  = dV_quartic,
-        a   = 1.,   # overwriting default
         x0  = 1.,
+    ),
+    cosh = dict(
+        dV  = dV_cosh,
+        x0  = 4.,
+    ),
+    double_well = dict(
+        dV  = dV_double_well,
+        a   = 0.05,
+        x0  = 4.,
+    ),
+    parabolic_with_peak = dict(
+        dV  = dV_parabolic_with_peak,
+        a = 0.05,
+    ),
+    quartic_with_peak = dict(
+        dV  = dV_quartic_with_peak,
+        a = 0.05,
+    ),
+    false_vacuum = dict(
+        dV  = dV_false_vacuum,
+        #  a = 0.05,
     ),
 )
 
 plt_kwds = dict(
     ylim = dict(
         parabolic   = [(-1.5, 1.5), (0., 0.1), (-2., 2.)],
-        cosh        = [(-1.5, 0.5), (0., 1.), (-0.5, 0.5)],
-        double_well = [(-5., 5.), (0., 0.02), (-5., 5.)],
         quartic     = [(-2., 2.), (0., 0.1), (-2., 2.)],
+        cosh        = [(-1.0, 5.0), (0., 2.), (-0.5, 0.5)],
+        double_well = [(-5., 5.), (0., 0.02), (-5., 5.)],
+        parabolic_with_peak = [(-5., 5.), (0., 0.02), (-5., 5.)],
+        quartic_with_peak   = [(-5., 5.), (0., 0.02), (-5., 5.)],
+        false_vacuum        = [(-5., 5.), (0., 0.02), (-5., 5.)],
     )
 )
 
@@ -237,6 +281,10 @@ config_dict = {**sim_kwds['default'], **sim_kwds[POTENTIAL]}
 dt          = config_dict['a']
 grid        = np.arange(0, Nt*dt, dt)
 sim         = Simulation(**config_dict)
+
+# adjust initial conditions
+#  sim.arrays['x'] = -.5*np.ones(Nt)
+#  sim.arrays['xh'] = -.5*np.ones(Nt)
 
 
 fig = plt.figure()
@@ -249,9 +297,9 @@ for ax, ti, ylim in zip([a, c, s],
     ax.set_xlim(0, grid[-1])
     ax.set_ylim(ylim)
 
-avg_line,       = a.plot([], [])
-cor_line,       = c.plot([], [])
-slope_line,     = s.plot([], [])
+avg_line,   = a.plot([], [])
+cor_line,   = c.plot([], [])
+slope_line, = s.plot([], [])
 
 
 #  FFWriter = animation.FFMpegWriter(fps=10)

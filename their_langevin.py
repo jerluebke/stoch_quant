@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
-potential = "parabolic"
-#  potential = "cosh"
+#  potential = "parabolic"
+potential = "cosh"
 #  potential = "double_well"
 #  potential = "quartic"
 
@@ -191,7 +191,7 @@ line = plt.plot([], [])[0]
 text = plt.text(0.2*plot_xmax, plot_ymin + 0.9*plot_height, \
                 "$(\\Delta E)_1^{\mathrm{simu}}$")
 if potential == "cosh":
-    plt.text(0.2*plot_xmax, plot_ymin + 0.8*plot_height, "$(\\DeltaE)_1^{\mathrm{theo}}=0.13151$", fontsize=20)
+    plt.text(0.2*plot_xmax, plot_ymin + 0.8*plot_height, "$(\\Delta E)_1^{\mathrm{theo}}=0.13151$", fontsize=20)
 if potential == "quartic":
     plt.text(0.2*plot_xmax, plot_ymin + 0.8*plot_height, "$(\\Delta E)_1^{\mathrm{theo}}=1.72362$", fontsize=20)
 plt.xlabel('$t$', fontsize=16)
