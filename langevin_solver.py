@@ -14,10 +14,15 @@ np.random.seed(100)     # for reproducibility
 #  POTENTIAL = 'cosh'
 #  POTENTIAL = 'quartic'
 #  POTENTIAL = 'double_well'
-POTENTIAL = 'parabolic_with_peak'
+#  POTENTIAL = 'parabolic_with_peak'
 #  POTENTIAL = 'quartic_with_peak'
 #  POTENTIAL = 'false_vacuum'
+POTENTIAL = 'cosine'
 Nt = 128
+
+# fixed start and end
+#  X0, X1 = .04, -.04
+X0, X1 = 2*np.pi*0.01, -2*np.pi*0.01
 
 
 LAP_1D_STENCIL = np.array([1., -2., 1.])
@@ -35,11 +40,15 @@ def Lap(a, o, dx):
     dividing it by the square of the step width.
 
     The boundaries are filled with zeros.
-    """
-    # periodic boundaries
-    convolve1d(a, LAP_1D_STENCIL, output=o, mode='wrap')
-    # const boundaries = 0
-    #  convolve1d(a, LAP_1D_STENCIL, output=o, mode='constant')
+    """                                         #============#
+    convolve1d(a, LAP_1D_STENCIL, output=o,     # boundaries #
+                                                #============#
+               #  mode='constant',                 # constant = 0
+               mode='wrap'                      # periodic
+               #  mode='nearest'                   # continued
+              )
+    #  o[0] = X0                                   # fixed by X0, X1
+    #  o[-1] = X1
     return np.divide(o, dx**2, out=o)
 
 
@@ -204,6 +213,10 @@ def dV_false_vacuum(x, *unused):
     c = 3.
     return a**4 * x**3 - a**2 * b**2 * x - c
 
+def dV_cosine(x, *unused):
+    """ V = 1 - cos(x) """
+    return np.sin(x)
+
 
 def init():
     avg_line.set_data([], [])
@@ -246,21 +259,25 @@ sim_kwds = dict(
         x0  = 4.,
     ),
     double_well = dict(
-        dV  = dV_double_well,
-        a   = 0.05,
-        x0  = 4.,
+        dV = dV_double_well,
+        #  a   = 0.05,
+        #  dtau= 1e-3,
+        x0 = 4.,
     ),
     parabolic_with_peak = dict(
-        dV  = dV_parabolic_with_peak,
+        dV = dV_parabolic_with_peak,
         a = 0.05,
     ),
     quartic_with_peak = dict(
-        dV  = dV_quartic_with_peak,
+        dV = dV_quartic_with_peak,
         a = 0.05,
     ),
     false_vacuum = dict(
-        dV  = dV_false_vacuum,
+        dV = dV_false_vacuum,
         #  a = 0.05,
+    ),
+    cosine = dict(
+        dV = dV_cosine,
     ),
 )
 
@@ -272,7 +289,8 @@ plt_kwds = dict(
         double_well = [(-5., 5.), (0., 0.02), (-5., 5.)],
         parabolic_with_peak = [(-5., 5.), (0., 0.02), (-5., 5.)],
         quartic_with_peak   = [(-5., 5.), (0., 0.02), (-5., 5.)],
-        false_vacuum        = [(-5., 5.), (0., 0.02), (-5., 5.)],
+        false_vacuum= [(-5., 5.), (0., 0.02), (-5., 5.)],
+        cosine      = [(-3., 9.), (0., 0.1), (-5., 5.)],
     )
 )
 
@@ -283,8 +301,21 @@ grid        = np.arange(0, Nt*dt, dt)
 sim         = Simulation(**config_dict)
 
 # adjust initial conditions
+# false vacuum potential: start in false vacuum, then tunnel to true vacuum
 #  sim.arrays['x'] = -.5*np.ones(Nt)
 #  sim.arrays['xh'] = -.5*np.ones(Nt)
+# start at oposite locations (kink solution as initial condition), use with
+# mode='nearest' in `convolve1d`
+# line over whole grid from X0 to X1
+#  sim.arrays['x'] = -4/grid[-1]*grid+2
+#  sim.arrays['xh'] = -4/grid[-1]*grid+2
+# only boundaries
+#  sim.arrays['x'][0] = 4.
+#  sim.arrays['x'][1] = -4.
+#  sim.arrays['xh'][0] = 4.
+#  sim.arrays['xh'][1] = -4.
+#  sim.arrays['x'] = np.pi*np.ones(Nt)
+#  sim.arrays['xh'] = np.pi*np.ones(Nt)
 
 
 fig = plt.figure()
