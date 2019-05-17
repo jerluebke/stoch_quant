@@ -16,13 +16,13 @@ np.random.seed(100)     # for reproducibility
 #  POTENTIAL = 'double_well'
 #  POTENTIAL = 'parabolic_with_peak'
 #  POTENTIAL = 'quartic_with_peak'
-#  POTENTIAL = 'false_vacuum'
-POTENTIAL = 'cosine'
+POTENTIAL = 'false_vacuum'
+#  POTENTIAL = 'cosine'
 Nt = 128
 
 # fixed start and end
-#  X0, X1 = .04, -.04
-X0, X1 = 2*np.pi*0.01, -2*np.pi*0.01
+X0, X1 = .04, -.04
+#  X0, X1 = 2*np.pi*0.01, -2*np.pi*0.01
 
 
 LAP_1D_STENCIL = np.array([1., -2., 1.])
@@ -214,8 +214,9 @@ def dV_false_vacuum(x, *unused):
     return a**4 * x**3 - a**2 * b**2 * x - c
 
 def dV_cosine(x, *unused):
-    """ V = 1 - cos(x) """
-    return np.sin(x)
+    """ V = 1 - a*cos(x) """
+    a = 1.
+    return a*np.sin(x)
 
 
 def init():
@@ -290,7 +291,7 @@ plt_kwds = dict(
         parabolic_with_peak = [(-5., 5.), (0., 0.02), (-5., 5.)],
         quartic_with_peak   = [(-5., 5.), (0., 0.02), (-5., 5.)],
         false_vacuum= [(-5., 5.), (0., 0.02), (-5., 5.)],
-        cosine      = [(-3., 9.), (0., 0.1), (-5., 5.)],
+        cosine      = [(-10., 4.), (0., 1.), (-5., 5.)],
     )
 )
 
@@ -302,8 +303,8 @@ sim         = Simulation(**config_dict)
 
 # adjust initial conditions
 # false vacuum potential: start in false vacuum, then tunnel to true vacuum
-#  sim.arrays['x'] = -.5*np.ones(Nt)
-#  sim.arrays['xh'] = -.5*np.ones(Nt)
+sim.arrays['x'] = -.5*np.ones(Nt)
+sim.arrays['xh'] = -.5*np.ones(Nt)
 # start at oposite locations (kink solution as initial condition), use with
 # mode='nearest' in `convolve1d`
 # line over whole grid from X0 to X1
