@@ -25,7 +25,7 @@
     \tikzexternaldisable
 \usepackage{pgfplots}
     \pgfplotsset{%
-        compat=1.16,
+        compat=1.15,
         table/search path={data},
     }
 \usepackage[makeroom]{cancel}
@@ -43,6 +43,7 @@
 \newcommand*{\figref}[1]{(see fig.~\ref{#1})}
 \newcommand{\eg}{e.\,g.}
 \newcommand{\ie}{i.\,e.}
+\newcommand{\action}{\ensuremath{\mathcal{S}}}
 \newcommand{\SD}{\ensuremath{\mathcal{S}_{\mathrm{D}}}}
 \newcommand{\xdoti}{\ensuremath{\dot{x}_i}}
 \newcommand{\xdotj}{\ensuremath{\dot{x}_j}}
@@ -50,10 +51,18 @@
 \newcommand{\deltaij}{\ensuremath{\delta_{ij}}}
 \newcommand{\OverDeltaT}[1]{\ensuremath{\frac{#1}{\Delta t}}}
 \newcommand{\DT}{\ensuremath{\mathrm{D}_t}}
+\newcommand{\OverTwoDeltaT}[1]{\ensuremath{\frac{#1}{2\, \Delta t}}}
+\newcommand{\xdotjp}{\ensuremath{\dot{x}_{j+1}}}
+\newcommand{\avg}[1]{\langle#1\rangle}
+\newcommand{\SE}{\mathcal{S}_{\mathrm{E}}}
+\newcommand{\SEh}{\mathcal{S}_{\mathrm{E},h}}
+\newcommand{\pathinth}[1]{\int\mathcal{D}[x]#1e^{-\SEh}}
+\newcommand{\pathint}[1]{\int\mathcal{D}[x]#1e^{-\SE}}
+\newcommand{\BigO}[1]{\mathcal{O}\left(#1\right)}
+\DeclareMathOperator{\cov}{cov}
 
 
-\title{}
-\subject{Some equations related to \emph{Stochastic Quantization}}
+\title{Some equations related to \emph{Stochastic Quantization}}
 \author{Jeremiah Lübke, Franz Wilfarth}
 \date{\today}
 
@@ -61,21 +70,38 @@
 \begin{document}
 \maketitle
 
+\todo[inline]{%
+    Hab unsere Versionen zusammengeführt. Wenn du damit zufrieden bist, lösch
+    diesen Kommentar.
+
+    Deine Idee mit der zentralen Differenz ist besser, auch die
+    totale Ableitung $\dv{L_i}{x_j}$ hab ich übernommen; für $\pdv{x_i}{x_j}$ würde
+    ich vorschlagen, weiter die partielle Ableitung zu schreiben.
+
+    Die $\Delta t$-s verwirren mich. Eigentlich gehören sie in die
+    diskretisierte Summe, aber damit wir unser Ergebnis erhalten, müssen sie
+    rausfallen. Ich hab jetzt $\dv{\SD}{x_j}\Delta t$ geschrieben, weiß aber
+    nicht, ob man das rechtfertigen kann...
+}
+
 \section*{Discrete Derivative of the Action Functional}
 Let us start by discretizing the action functional:
 \begin{equation*}
     \mathcal{S}\left[x(t)\right] = \int\dd{t}L\left(x(t), \dot{x}(t)\right)
     \quad\longrightarrow\quad
-    \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)
+    \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)\Delta t
 \end{equation*}
 where $x(t) \longrightarrow x_i \equiv x(t_i)$ and $\dot{x}(t) \longrightarrow
-\xdoti \equiv \OverDeltaT{x_{i}-x_{i+1}}$. For convenience we write $L_i \equiv
+\xdoti \equiv \OverTwoDeltaT{x_{i+1}-x_{i-1}}$. For convenience we write $L_i \equiv
 L(x_i, \xdoti)$.\\
 
-Now we compute the derivative:
+Now we compute the derivative
+\todo{Was die $\Delta t$-s angeht, bin ich mir nicht sicher...}
+(where the $\Delta t$-s cancel):
 \begin{equation*}
-    \pdv{\SD}{x_j}=\pdv{x_j}\sum_i L_i
+    \dv{\SD}{x_j}\,\Delta t=\sum_i\dv{L_i}{x_j}\,\Delta t
     =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
+    \Delta t
 \end{equation*}
 with
 \begin{equation*}
@@ -83,24 +109,99 @@ with
 \end{equation*}
 and
 \begin{equation*}
-    \pdv{\xdoti}{x_j}=\pdv{\OverDeltaT{x_{i}-x_{i+1}}}{x_j}
-    =\OverDeltaT{1}\left(\pdv{x_i}{x_j}-\pdv{x_{i+1}}{x_j}\right)
-    =\OverDeltaT{1}\left(\deltaij-\delta_{i+1,j}\right).
+    \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
+    =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
+    =\OverTwoDeltaT{1}\left(\delta_{i+1,j}-\delta_{i-1,j}\right).
 \end{equation*}
-The $\delta$s kill the sum, and we can write (pay attention to the indices):
+The $\delta$-s kill the sum, and we can write (pay attention to the indices):
 \begin{align*}
-    \pdv{\SD}{x_j}&=\pdv{L_j}{x_j}+\OverDeltaT{1}\left(\pdv{L_j}{\xdotj}-\pdv{L_{j-1}}{\xdotjm}\right)\\
-    &=\pdv{L_j}{x_j}-\OverDeltaT{1}\left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_j}{\xdotj}\right)\\
-    \implies\Aboxed{\pdv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j-1}}{\xdotjm}\right)}
+    \dv{\SD}{x_j}&=\pdv{L_j}{x_j}+\OverTwoDeltaT{1}\left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\\
+    &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)\\
+    \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
 \end{align*}
-where $\DT(f_i)=\OverDeltaT{f_{i}-f_{i+1}}$ is the discrete time derivation
+where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
 operator.\\
-This is exactly what we wanted to achieve.
+This is exactly what we wanted to achieve.\\
 
 For clarity, we make the transition back to the continuous description:
 \begin{equation*}
-    \pdv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
+    \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
 \end{equation*}
-and receive the well known \emph{Euler-Lagrange-Equation}.
+which is the well known \emph{Euler-Lagrange-Equation}.
+
+\todo[inline]{add context to Langevin equation}
+
+\section*{Correlation Function}
+Show:
+\begin{equation*}
+    \cov(x_0, x_l) \equiv \avg{x_0 x_l}-\avg{x_0}\avg{x_l}
+    = \frac{\avg{x_l}_h-\avg{x_l}}{h}+\BigO{h}
+\end{equation*}
+
+Consider:
+\begin{align*}
+    \eval{\dv{\avg{x_l}_h}{h}}_{h=0} &=
+    \eval{\dv{h}\frac{\pathinth{\,x_l\,}}{\pathinth{}}}_{h=0} \\ &=
+    \eval{\frac{\left(\pathinth{\,x_l x_0\,}\right)\left(\pathinth{}\right)
+    -\left(\pathinth{x_l}\right)\left(\pathinth{x_0}\right)}
+    {\left(\pathinth{}\right)^2}}_{h=0} \\ &=
+    \frac{\left(\pathint{\,x_0 x_l\,}\right)\left(\pathint{}\right)
+    -\left(\pathint{x_l}\right)\left(\pathint{x_0}\right)}
+    {\left(\pathint{}\right)^2} \\ &=
+    \avg{x_0 x_l}-\avg{x_0}\avg{x_l} \tag{i}
+\end{align*}
+Taylor at $h=0$ (where $\avg{x_l}_0\equiv\avg{x_l}$):
+\begin{equation*}
+    \avg{x_l}_h=\avg{x_l}_0+\eval{\dv{\avg{x_l}_h}{h}}_{h=0}\,h+\BigO{h^2}
+    \tag{ii}
+\end{equation*}
+\begin{equation*}
+    \overset{(i),(ii)}{\implies}\eval{\dv{\avg{x_l}_h}{h}}_{h=0}
+    =\boxed{\avg{x_0 x_l}-\avg{x_0}\avg{x_l}
+    =\frac{\avg{x_l}_h-\avg{x_l}}{h}+\BigO{h}}
+\end{equation*}
+
+
+\section*{Implementation of modified Action}
+Why the correspondance (see file \texttt{langevin\_solver.py}, line 145):
+\begin{equation*}
+    \SEh=\SE-h\,x_0 \iff \texttt{xh[0]+=h*dtau}
+\end{equation*}
+
+\emph{Possible Solution}
+
+Consider:
+\begin{equation*}
+    \delta\action=\int\dd{t}\fdv{\action}{x}\phi=\eval{\dv{h}\action[x+h\,\phi]}_{h=0}
+    =\lim_{h\to 0}\frac{\action[x+h\,\phi]-\action[x]}{h}
+\end{equation*}
+Choose $h$ fixed but small:
+\begin{gather*}
+    h\,\delta\action\approx\action[x+h\,\phi]-\action[x]\\
+    \implies\action_{h}[x]\equiv\action[x+h\,\phi]\approx\action[x]+h\,\delta\action[x]
+\end{gather*}
+where $x_h\equiv x+h\,\phi$ is the path modified by some source with strength
+$h$.
+
+Use the Euler-Lagrange-Equation:
+\begin{equation*}
+    \delta\action=\int\dd{t}\fdv{\action}{x}\phi=\int\dd{t}\left(\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}\right)\phi
+\end{equation*}
+Now look at the special case of a parabolic potential ($m=\omega=1$)
+$L=\frac{1}{2}\dot{x}^2-\frac{1}{2}x^2$ and choose as a test function a
+$\delta$ peaked at $t=0$ (representing the position of the source):
+\begin{gather*}
+    \delta\action=\int\dd{t}\delta(t)\left(-\ddot{x}-x\right)
+    \overset{\ddot{x}(t=0)=0}{=}-x(t=0) \\
+    \implies \action_h[x]=\action[x]-h\,x(0)
+\end{gather*}
+which looks quite like the modified action for a path with a small source at
+$t=0$.
+
+\vspace*{\baselineskip}
+
+However this is rather useless, since this derivation only considers a
+very specialised case.
+
 
 \end{document}
