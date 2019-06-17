@@ -2,7 +2,7 @@
 
 from math import sqrt
 import numpy as np
-from scipy.ndimage import convolve1d
+from scipy.ndimage import convolve, convolve1d
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from collections import OrderedDict
@@ -26,6 +26,18 @@ X0, X1 = .04, -.04
 
 
 LAP_1D_STENCIL = np.array([1., -2., 1.])
+LAP_3D_STENCIL = np.array((
+    [[0., 0., 0.],
+     [0., 1., 0.],
+     [0., 0., 0.]],
+    [[0., 1., 0.],
+     [1., 6., 1.],
+     [0., 1., 0.]],
+    [[0., 0., 0.],
+     [0., 1., 0.],
+     [0., 0., 0.]]
+))
+
 
 def Lap(a, o, dx):
     """Laplacian
@@ -41,8 +53,9 @@ def Lap(a, o, dx):
 
     The boundaries are filled with zeros.
     """                                         #============#
-    convolve1d(a, LAP_1D_STENCIL, output=o,     # boundaries #
+    #  convolve1d(a, LAP_1D_STENCIL, output=o,     # boundaries #
                                                 #============#
+    convolve(a, LAP_3D_STENCIL, output=o,
                #  mode='constant',                 # constant = 0
                mode='wrap'                      # periodic
                #  mode='nearest'                   # continued
@@ -121,7 +134,12 @@ class Simulation:
 
             # advancing x
             Lap(xold, L, a)
-            x[:] = xold + dtau * m * L - dtau * dV(xold, x0) + R
+            # 1d quantum mechanics
+            #  x[:] = xold + dtau * m * L - dtau * dV(xold, x0) + R
+            # free field (Klein-Gordon)
+            x[:] = xold + dtau * (L - m * xold) + R
+            # quartic interaction
+            #  x[:] = xold + dtau * (L - m * xold - x0 * xold**3 / 6.) + R
 
             # rescaling dtau for stability
             # get max value and its coordinates of new x
@@ -139,10 +157,13 @@ class Simulation:
 
         # advancing xh
         Lap(xh, Lh, a)
-        xh += dtau * m * Lh - dtau * dV(xh, x0) + R
+        #  xh += dtau * m * Lh - dtau * dV(xh, x0) + R
+        xh += dtau * (L - m * xh) + R
+        #  xh += dtau * (L - m * xh - x0 * xh**3 / 6.) + R
 
         # fix source in xh
-        xh[0] += dtau * h
+        #  xh[0] += dtau * h
+        xh[...,0][0, 0] += dtau * h
 
         # update sums and number of steps
         self.x_sum  += x
@@ -259,6 +280,15 @@ def animate2(i):
     return avg1_line, avg2_line
 
 
+def animate3(i):
+    fsim.multistep(1000)
+    favg.set_data(fsim.x_average[0])
+
+    print('steps = %d' % sim.steps)
+
+    return favg,
+
+
 
 sim_kwds = dict(
     default = dict(
@@ -321,6 +351,10 @@ dt          = config_dict['a']
 grid        = np.arange(0, Nt*dt, dt)
 sim         = Simulation(**config_dict)
 
+
+fsim = Simulation(None, (64, 64, 64), dtau=0.1, a=0.1, m=1., x0=1.)
+
+
 # adjust initial conditions
 # false vacuum potential: start in false vacuum, then tunnel to true vacuum
 #  sim.arrays['x'] = -.5*np.ones(Nt)
@@ -354,7 +388,7 @@ cor_line,   = c.plot([], [])
 slope_line, = s.plot([], [])
 
 
-#  FFWriter = animation.FFMpegWriter(fps=10)
+FFWriter = animation.FFMpegWriter(fps=10)
 #  print('Energy\t\t|Steps\n======\t\t======')
 #  anim_obj = animation.FuncAnimation(fig, animate, init_func=init, blit=True)
 
@@ -366,7 +400,15 @@ ax2.set_ylim(plt_kwds['ylim'][POTENTIAL][0])
 
 avg1_line,= ax2.plot([], [])
 avg2_line,= ax2.plot([], [])
-anim_obj  = animation.FuncAnimation(fig2, animate2, blit=True, repeat=False)
+#  anim_obj  = animation.FuncAnimation(fig2, animate2, blit=True, repeat=False)
+
+
+
+fig3, ax3 = plt.subplots()
+favg = ax3.imshow(fsim.arrays['x'][0], animated=True)
+#  animation.FuncAnimation(fig3, animate3, 100, blit=True,
+#                          repeat=False).save('free-field.mp4', writer=FFWriter,
+#                                             dpi=100)
 
 
 #  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai :
