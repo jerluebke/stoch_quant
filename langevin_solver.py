@@ -13,10 +13,10 @@ np.random.seed(100)     # for reproducibility
 #  POTENTIAL = 'parabolic'
 #  POTENTIAL = 'cosh'
 #  POTENTIAL = 'quartic'
-#  POTENTIAL = 'double_well'
+POTENTIAL = 'double_well'
 #  POTENTIAL = 'parabolic_with_peak'
 #  POTENTIAL = 'quartic_with_peak'
-POTENTIAL = 'false_vacuum'
+#  POTENTIAL = 'false_vacuum'
 #  POTENTIAL = 'cosine'
 Nt = 128
 
@@ -145,16 +145,24 @@ class Simulation:
         xh[0] += dtau * h
 
         # update sums and number of steps
-        # TODO: wait for equilibrium?
-        self.x_sum += x
+        self.x_sum  += x
         self.xh_sum += xh
-        self.steps += 1
+        self.steps  += 1
 
 
     def multistep(self, n):
         """perform n steps with one call"""
         for _ in range(n):
             self.step()
+
+
+    def multistep2(self, n):
+        x_sum_2 = np.zeros((*self.grid, 2))
+        for _ in range(n):
+            self.step()
+            x_sum_2[...,0] += self.arrays['x']
+            x_sum_2[...,1] += self.arrays['xh']
+        return x_sum_2 / n
 
 
     @staticmethod
@@ -240,6 +248,17 @@ def animate(i):
     return avg_line, cor_line, slope_line
 
 
+def animate2(i):
+    avg2 = sim.multistep2(1000)
+
+    avg1_line.set_data(grid, sim.x_average)
+    avg2_line.set_data(grid, avg2[...,0])
+
+    print('steps = %d' % sim.steps)
+
+    return avg1_line, avg2_line
+
+
 
 sim_kwds = dict(
     default = dict(
@@ -253,7 +272,7 @@ sim_kwds = dict(
     ),
     quartic = dict(
         dV  = dV_quartic,
-        x0  = 1.,
+        x0  = 4e-3,
     ),
     cosh = dict(
         dV  = dV_cosh,
@@ -263,7 +282,8 @@ sim_kwds = dict(
         dV = dV_double_well,
         #  a   = 0.05,
         #  dtau= 1e-3,
-        x0 = 4.,
+        #  x0 = 1.6,
+        x0 = 1.2,
     ),
     parabolic_with_peak = dict(
         dV = dV_parabolic_with_peak,
@@ -303,8 +323,8 @@ sim         = Simulation(**config_dict)
 
 # adjust initial conditions
 # false vacuum potential: start in false vacuum, then tunnel to true vacuum
-sim.arrays['x'] = -.5*np.ones(Nt)
-sim.arrays['xh'] = -.5*np.ones(Nt)
+#  sim.arrays['x'] = -.5*np.ones(Nt)
+#  sim.arrays['xh'] = -.5*np.ones(Nt)
 # start at oposite locations (kink solution as initial condition), use with
 # mode='nearest' in `convolve1d`
 # line over whole grid from X0 to X1
@@ -335,8 +355,18 @@ slope_line, = s.plot([], [])
 
 
 #  FFWriter = animation.FFMpegWriter(fps=10)
-print('Energy\t\t|Steps\n======\t\t======')
-anim_obj = animation.FuncAnimation(fig, animate, init_func=init, blit=True)
+#  print('Energy\t\t|Steps\n======\t\t======')
+#  anim_obj = animation.FuncAnimation(fig, animate, init_func=init, blit=True)
+
+
+
+fig2, ax2 = plt.subplots()
+ax2.set_xlim(0, grid[-1])
+ax2.set_ylim(plt_kwds['ylim'][POTENTIAL][0])
+
+avg1_line,= ax2.plot([], [])
+avg2_line,= ax2.plot([], [])
+anim_obj  = animation.FuncAnimation(fig2, animate2, blit=True, repeat=False)
 
 
 #  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai :
