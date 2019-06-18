@@ -31,7 +31,7 @@ LAP_3D_STENCIL = np.array((
      [0., 1., 0.],
      [0., 0., 0.]],
     [[0., 1., 0.],
-     [1.,-6., 1.],
+     [1., 6., 1.],
      [0., 1., 0.]],
     [[0., 0., 0.],
      [0., 1., 0.],
@@ -137,9 +137,9 @@ class Simulation:
             # 1d quantum mechanics
             #  x[:] = xold + dtau * m * L - dtau * dV(xold, x0) + R
             # free field (Klein-Gordon)
-            #  x[:] = xold + dtau * (L - m * xold) + R
+            x[:] = xold + dtau * (L - m * xold) + R
             # quartic interaction
-            x[:] = xold + dtau * (L - m * xold - x0 * xold**3 / 6.) + R
+            #  x[:] = xold + dtau * (L - m * xold - x0 * xold**3 / 6.) + R
 
             # rescaling dtau for stability
             # get max value and its coordinates of new x
@@ -158,8 +158,8 @@ class Simulation:
         # advancing xh
         Lap(xh, Lh, a)
         #  xh += dtau * m * Lh - dtau * dV(xh, x0) + R
-        #  xh += dtau * (L - m * xh) + R
-        xh += dtau * (L - m * xh - x0 * xh**3 / 6.) + R
+        xh += dtau * (L - m * xh) + R
+        #  xh += dtau * (L - m * xh - x0 * xh**3 / 6.) + R
 
         # fix source in xh
         #  xh[0] += dtau * h
@@ -281,10 +281,11 @@ def animate2(i):
 
 
 def animate3(i):
-    #  fsim.multistep(100)
-    #  favg.set_data(fsim.x_average[0])
-    favg.set_data(i)
-    #  print('steps = %d' % fsim.steps)
+    fsim.multistep(1000)
+    favg.set_data(fsim.x_average[0])
+
+    print('steps = %d' % sim.steps)
+
     return favg,
 
 
@@ -351,7 +352,7 @@ grid        = np.arange(0, Nt*dt, dt)
 sim         = Simulation(**config_dict)
 
 
-fsim = Simulation(None, (64, 64, 64), dtau=1e-3, a=.1, m=-1., x0=1.)
+fsim = Simulation(None, (64, 64, 64), dtau=0.1, a=0.1, m=1., x0=1.)
 
 
 # adjust initial conditions
@@ -404,19 +405,10 @@ avg2_line,= ax2.plot([], [])
 
 
 fig3, ax3 = plt.subplots()
-ax3.grid(False)
 favg = ax3.imshow(fsim.arrays['x'][0], animated=True)
-
-frames = np.zeros((100, 64, 64))
-for i in range(10):
-    fsim.multistep(100)
-    print('steps = %d' % fsim.steps)
-    frames[i] = fsim.x_average[0]
-
-anim = \
-    animation.FuncAnimation(fig3, animate3, frames, blit=True,
-                            repeat=False)
-                            #.save('free-field.mp4', writer=FFWriter, dpi=100)
+#  animation.FuncAnimation(fig3, animate3, 100, blit=True,
+#                          repeat=False).save('free-field.mp4', writer=FFWriter,
+#                                             dpi=100)
 
 
 #  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai :
