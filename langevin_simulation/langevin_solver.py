@@ -25,8 +25,8 @@ def Lap(a, o, dx):
     convolve1d(a, LAP_1D_STENCIL, output=o,     # boundaries #
                                                 #============#
                #  mode='constant',                 # constant = 0
-               mode='wrap'                      # periodic
-               #  mode='nearest'                   # continued
+               #  mode='wrap'                      # periodic
+               mode='nearest'                   # continued
               )
     return np.divide(o, dx**2, out=o)
 

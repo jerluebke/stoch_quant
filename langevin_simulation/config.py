@@ -28,10 +28,14 @@ SIM_KWDS = dict(
         #  x0  = .1,
     ),
     double_well = dict(
-        dV = dV_double_well,
+        #  dV = dV_double_well,
+        dV = dV_double_well_2,
+        #  dV = dV_double_well_3,
         #  a   = 0.05,
         dtau= 1e-3,
-        x0 = 1.6,
+        #  x0 = 1.6,
+        #  x0 = .2
+        x0 = (.25, 1.6)
     ),
     parabolic_with_peak = dict(
         dV = dV_parabolic_with_peak,

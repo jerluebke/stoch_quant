@@ -25,6 +25,16 @@ def dV_double_well(x, a):
     """ (x**2 - a**2)**2 / 4 """
     return x**3 - x*a**2
 
+def dV_double_well_2(x, args):
+    """ h * (x**2 - a**2)**2 """
+    h, a = args
+    return 4. * h * (x**3 - x*a**2)
+
+def dV_double_well_3(x, E_0):
+    """ E_0 * (C / 4 * x**4 - x**2) """
+    C = 0.18
+    return E_0 * (C*x**3 - 2.*x)
+
 def dV_quartic(x, mu):
     """ V = mu/4 * x**4 """
     return mu*x**3

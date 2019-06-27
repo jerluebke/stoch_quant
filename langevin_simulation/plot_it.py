@@ -109,8 +109,8 @@ def animate2():
     ax.set_ylim(PLT_KWDS['ylim'][POTENTIAL][0])
     ax.set(title='average', xlabel='time', ylabel='x')
 
-    avg1_line,= ax.plot([], [])
-    avg2_line,= ax.plot([], [])
+    avg1_line, = ax.plot([], [])
+    avg2_line, = ax.plot([], [])
 
     def anim_step(i):
         avg2 = sim.multistep2(1000)
