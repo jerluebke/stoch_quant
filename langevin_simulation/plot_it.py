@@ -50,9 +50,7 @@ grid        = np.arange(0, Nt*dt, dt)
 #########################
 
 def animate1():
-    """to be passed to FuncAnimation
-
-    animate three quantities in seperate axes:
+    """animate three quantities in seperate axes:
         average
         correlation function
         log slope of correlation function
@@ -97,9 +95,7 @@ def animate1():
 
 
 def animate2():
-    """to be passed to FuncAnimation
-
-    animate long term average over total time and short term average after
+    """animate long term average over total time and short term average after
     every multistep2 in one common ax
 
     returns created figure and animation object
@@ -126,9 +122,73 @@ def animate2():
 
 
 
+def animate3():
+    """animate long term average over total time and short term average after
+    every multistep2 in one common ax
+
+    returns created figure and animation object
+    """
+    fig, (ax_avg, ax_hist) = plt.subplots(1,2)
+    ax_avg.set_xlim(0, grid[-1])
+    ax_avg.set_ylim(PLT_KWDS['ylim'][POTENTIAL][0])
+    ax_avg.set(title='average', xlabel='time', ylabel='x')
+    ax_hist.set_ylim(-3, 3)
+    ax_hist.set(title='history', xlabel='tau', ylabel='x')
+
+    avg1_line, = ax_avg.plot([], [])
+    avg2_line, = ax_avg.plot([], [])
+    line, = ax_hist.plot([], [])
+
+    steps = 1000
+    t = np.arange(steps)
+    x = np.zeros(steps)
+
+    def anim_step(i):
+        avg2 = sim.multistep2(1000)
+
+        avg1_line.set_data(grid, sim.x_average)
+        avg2_line.set_data(grid, avg2[...,0])
+
+        x[i] = avg2[0,0]
+        line.set_data(t[:i], x[:i])
+        ax_hist.set_xlim(-1,i+1)
+
+        return avg1_line, avg2_line, line
+
+    #  https://stackoverflow.com/a/14421998
+    anim_obj  = animation.FuncAnimation(fig, anim_step, frames=steps,
+                                        blit=False, repeat=False)
+
+    return fig, anim_obj
+
+
+
+def count_transitions_for_varying_heights():
+    heights = np.arange(0.1, 8., 0.5)
+    jumps   = np.zeros_like(heights)
+
+    for h in range(heights.size):
+        print('counting for height = %f' % heights[h])
+        config_dict['x0'][0] = heights[h]
+        sim = Simulation(**config_dict)
+
+        old = sim.multistep2(100)[64,0]
+        for i in range(1000):
+            current = sim.multistep2(1000)[64,0]
+            if old * current < 0:
+                jumps[h] += 1
+            old = current
+
+    plt.plot(heights,jumps)
+
+
+
 if __name__ == '__main__':
     #  f, a = animate1()
-    f, a = animate2()
+    #  f, a = animate2()
+    #  f, a = animate3()
+    count_transitions_for_varying_heights()
+
     plt.show()
 
 
