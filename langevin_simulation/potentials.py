@@ -25,9 +25,10 @@ def dV_double_well(x, a):
     """ (x**2 - a**2)**2 / 4 """
     return x**3 - x*a**2
 
-def dV_double_well_2(x, args):
+def dV_double_well_2(x, kwargs):
     """ h * (x**2 - a**2)**2 """
-    h, a = args
+    h = kwargs['h']
+    a = kwargs['a']
     return 4. * h * (x**3 - x*a**2)
 
 def dV_double_well_3(x, E_0):

@@ -163,18 +163,18 @@ def animate3():
 
 
 
-def count_transitions_for_varying_heights():
-    heights = np.arange(0.1, 8., 0.5)
-    jumps   = np.zeros_like(heights)
+def count_transitions_for_varying_heights(heights, steps=1000, ms_steps=200,
+                                          sample=64):
+    jumps = np.zeros_like(heights)
 
     for h in range(heights.size):
-        print('counting for height = %f' % heights[h])
-        config_dict['x0'][0] = heights[h]
+        print('counting for height = %3.1f' % heights[h])
+        config_dict['x0']['h'] = heights[h]
         sim = Simulation(**config_dict)
 
-        old = sim.multistep2(100)[64,0]
-        for i in range(1000):
-            current = sim.multistep2(1000)[64,0]
+        old = sim.multistep2(ms_steps)[sample,0]
+        for i in range(steps):
+            current = sim.multistep2(ms_steps)[sample,0]
             if old * current < 0:
                 jumps[h] += 1
             old = current
@@ -187,7 +187,13 @@ if __name__ == '__main__':
     #  f, a = animate1()
     #  f, a = animate2()
     #  f, a = animate3()
-    count_transitions_for_varying_heights()
+
+    for a in (.6, .8, 1., 1.2, 1.4, 1.6, 1.8, 2.):
+        print('\na = %3.1f' % a)
+        plt.figure()
+        config_dict['x0']['a'] = a
+        count_transitions_for_varying_heights(np.arange(.5, 7.5, .5))
+        plt.gca().set(title='a = %3.1f' % a, xlabel='h', ylabel='jumps')
 
     plt.show()
 

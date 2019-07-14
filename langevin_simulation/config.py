@@ -35,7 +35,7 @@ SIM_KWDS = dict(
         dtau= 1e-3,
         #  x0 = 1.6,
         #  x0 = .2
-        x0 = [.25, 1.6]
+        x0 = {'h' : .25, 'a' : 1.6}
     ),
     parabolic_with_peak = dict(
         dV = dV_parabolic_with_peak,
