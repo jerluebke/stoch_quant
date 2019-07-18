@@ -165,7 +165,7 @@ def animate3():
 
 
 
-def count_transitions_for_varying_heights(heights, steps=1000, ms_steps=200,
+def count_transitions_for_varying_heights(heights, steps=100_000, ms_steps=100,
                                           sample=64):
     jumps = np.zeros_like(heights)
 
@@ -190,12 +190,16 @@ if __name__ == '__main__':
     #  f, a = animate2()
     #  f, a = animate3()
 
-    no_of_runs = 20
+    no_of_runs = 10
 
     #  widths = [.7, 1., 1.3, 1.6]
     config_dict['x0']['a'] = 1.
-    heights = np.arange(.5, 7.5, .5)
+    #  heights = np.arange(.5, 7.5, .5)
+    heights = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4.5, 5., 6., 7., 8., 9.,
+                        10., 12., 14., 16., 18., 20.])
     jumps = np.zeros((heights.size, no_of_runs))
+
+    file_name = input('save data in: ')
 
     start = time.time()
 
@@ -208,13 +212,13 @@ if __name__ == '__main__':
     #      plt.gca().set(title='a = %3.1f' % a, xlabel='h', ylabel='jumps')
 
     for i in range(no_of_runs):
-        print('run %d\n' % i)
+        print('\n\nrun %d\n' % i)
         np.random.seed(int(time.time()))
         jumps[:,i] = count_transitions_for_varying_heights(heights)
 
     print('\nexecution time: %f seconds' % (time.time() - start))
 
-    np.save('results-01', jumps)
+    np.save(file_name, jumps)
     #  plt.show()
 
 
