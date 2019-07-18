@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -168,18 +170,18 @@ def count_transitions_for_varying_heights(heights, steps=1000, ms_steps=200,
     jumps = np.zeros_like(heights)
 
     for h in range(heights.size):
-        print('counting for height = %3.1f' % heights[h])
         config_dict['x0']['h'] = heights[h]
         sim = Simulation(**config_dict)
+        print('counting for height = %(h).1f, width = %(a).1f' % (sim.params['x0']))
 
-        old = sim.multistep2(ms_steps)[sample,0]
+        old = sim.multistep2(ms_steps)[sample]
         for i in range(steps):
-            current = sim.multistep2(ms_steps)[sample,0]
+            current = sim.multistep2(ms_steps)[sample]
             if old * current < 0:
                 jumps[h] += 1
             old = current
 
-    plt.plot(heights,jumps)
+    return jumps
 
 
 
@@ -188,14 +190,32 @@ if __name__ == '__main__':
     #  f, a = animate2()
     #  f, a = animate3()
 
-    for a in (.6, .8, 1., 1.2, 1.4, 1.6, 1.8, 2.):
-        print('\na = %3.1f' % a)
-        plt.figure()
-        config_dict['x0']['a'] = a
-        count_transitions_for_varying_heights(np.arange(.5, 7.5, .5))
-        plt.gca().set(title='a = %3.1f' % a, xlabel='h', ylabel='jumps')
+    no_of_runs = 20
 
-    plt.show()
+    #  widths = [.7, 1., 1.3, 1.6]
+    config_dict['x0']['a'] = 1.
+    heights = np.arange(.5, 7.5, .5)
+    jumps = np.zeros((heights.size, no_of_runs))
+
+    start = time.time()
+
+    #  for a in widths:
+    #      print('\na = %3.1f' % a)
+    #      plt.figure()
+    #      config_dict['x0']['a'] = a
+    #      jumps = count_transitions_for_varying_heights(heights)
+    #      plt.plot(heights, jumps)
+    #      plt.gca().set(title='a = %3.1f' % a, xlabel='h', ylabel='jumps')
+
+    for i in range(no_of_runs):
+        print('run %d\n' % i)
+        np.random.seed(int(time.time()))
+        jumps[:,i] = count_transitions_for_varying_heights(heights)
+
+    print('\nexecution time: %f seconds' % (time.time() - start))
+
+    np.save('results-01', jumps)
+    #  plt.show()
 
 
 #  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai :

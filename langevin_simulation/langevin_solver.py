@@ -79,6 +79,7 @@ class Simulation:
         )
         self.x_sum  = np.zeros(grid)
         self.xh_sum = np.zeros(grid)
+        self.x_sum_2= np.zeros(grid)
         self.steps  = 0
 
 
@@ -138,12 +139,12 @@ class Simulation:
 
     def multistep2(self, n):
         """perform n steps and compute the average"""
-        x_sum_2 = np.zeros((*self.grid, 2))
+        #  x_sum_2 = np.zeros((*self.grid, 2))
         for _ in range(n):
             self.step()
-            x_sum_2[...,0] += self.arrays['x']
-            x_sum_2[...,1] += self.arrays['xh']
-        return x_sum_2 / n
+            self.x_sum_2 += self.arrays['x']
+            #  x_sum_2[...,1] += self.arrays['xh']
+        return self.x_sum_2 / n
 
 
     @staticmethod
