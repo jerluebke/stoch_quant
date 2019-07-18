@@ -196,7 +196,7 @@ if __name__ == '__main__':
     config_dict['x0']['a'] = 1.
     #  heights = np.arange(.5, 7.5, .5)
     heights = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4.5, 5., 6., 7., 8., 9.,
-                        10., 12., 14., 16., 18., 20.])
+                        10., 12., 14.])
     jumps = np.zeros((heights.size, no_of_runs))
 
     file_name = input('save data in: ')
@@ -215,10 +215,10 @@ if __name__ == '__main__':
         print('\n\nrun %d\n' % i)
         np.random.seed(int(time.time()))
         jumps[:,i] = count_transitions_for_varying_heights(heights)
+        np.save('%s-%d' % (file_name, i), jumps)
 
     print('\nexecution time: %f seconds' % (time.time() - start))
 
-    np.save(file_name, jumps)
     #  plt.show()
 
 
