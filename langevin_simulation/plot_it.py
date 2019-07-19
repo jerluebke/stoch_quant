@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 import time
+from multiprocessing import Pool, current_process
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -111,9 +113,9 @@ def animate2():
     avg2_line, = ax.plot([], [])
 
     def anim_step(i):
-        avg2 = sim.multistep2(1000)
+        avg2 = sim.multistep2(100)
         avg1_line.set_data(grid, sim.x_average)
-        avg2_line.set_data(grid, avg2[...,0])
+        avg2_line.set_data(grid, avg2)
         print('steps = %d' % sim.steps)
         return avg1_line, avg2_line
 
@@ -165,14 +167,20 @@ def animate3():
 
 
 
-def count_transitions_for_varying_heights(heights, steps=100_000, ms_steps=100,
-                                          sample=64):
+def count_transitions_for_varying_heights(heights,
+                                          steps=10_000,
+                                          ms_steps=100,
+                                          width=1.,
+                                          sample=64,
+                                          proc_name='none'):
     jumps = np.zeros_like(heights)
+    config_dict['x0']['a'] = width
 
     for h in range(heights.size):
         config_dict['x0']['h'] = heights[h]
         sim = Simulation(**config_dict)
-        print('counting for height = %(h).1f, width = %(a).1f' % (sim.params['x0']))
+        print('[%(p)s] - counting for height = %(h).1f, width = %(a).1f' \
+              % {'p' : proc_name, **sim.params['x0']})
 
         old = sim.multistep2(ms_steps)[sample]
         for i in range(steps):
@@ -185,39 +193,54 @@ def count_transitions_for_varying_heights(heights, steps=100_000, ms_steps=100,
 
 
 
+def worker(heights, file_name, idx):
+    proc_name = current_process().name
+    print('[%s] - starting worker %d' % (proc_name, idx))
+    np.random.seed(None)    # seed from device entropy
+    jumps = count_transitions_for_varying_heights(heights, proc_name=proc_name)
+    np.save('%s-%d' % (file_name, idx), jumps)
+    print('[%s] - closing worker %d' % (proc_name, idx))
+
+
+
 if __name__ == '__main__':
     #  f, a = animate1()
     #  f, a = animate2()
     #  f, a = animate3()
+    #  plt.show()
+    #  sys.exit(0)
 
-    no_of_runs = 10
-
-    #  widths = [.7, 1., 1.3, 1.6]
+    no_of_runs = 8
     config_dict['x0']['a'] = 1.
     heights = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7., 8.,
-                        9., 10., 12., 14.])
+                        9., 10., 12., 14., 16.])
 
-    file_name = input('save data in: ')
 
-    start = time.time()
+    TEST = False
 
-    #  for a in widths:
-    #      print('\na = %3.1f' % a)
-    #      plt.figure()
-    #      config_dict['x0']['a'] = a
-    #      jumps = count_transitions_for_varying_heights(heights)
-    #      plt.plot(heights, jumps)
-    #      plt.gca().set(title='a = %3.1f' % a, xlabel='h', ylabel='jumps')
+    if TEST:
+        jumps = count_transitions_for_varying_heights(heights, 10_000, 10)
+        plt.plot(heights, jumps)
 
-    for i in range(no_of_runs):
-        print('\n\nrun %d\n' % i)
-        np.random.seed(int(time.time()))
-        jumps = count_transitions_for_varying_heights(heights)
-        np.save('%s-%d' % (file_name, i), jumps)
+        jumps = count_transitions_for_varying_heights( heights, 1_000, 100)
+        plt.plot(heights, jumps)
 
-    print('\nexecution time: %f seconds' % (time.time() - start))
+        plt.show()
 
-    #  plt.show()
+
+    else:
+        file_name = input('save data in: ')
+
+        start = time.time()
+
+        with Pool() as pool:
+            res = [pool.apply_async(worker, (heights, file_name, i))
+                   for i in range(no_of_runs)]
+            for r in res:
+                r.wait()
+
+        print('\nexecution time: %f seconds' % (time.time() - start))
+
 
 
 #  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai :
