@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
-import time
+import sys, os, time
 from multiprocessing import Pool, current_process
 
 import numpy as np
@@ -193,11 +192,12 @@ def count_transitions_for_varying_heights(heights,
 
 
 
-def worker(heights, file_name, idx):
+def worker(idx, file_name, heights, **kwargs):
     proc_name = current_process().name
     print('[%s] - starting worker %d' % (proc_name, idx))
     np.random.seed(None)    # seed from device entropy
-    jumps = count_transitions_for_varying_heights(heights, proc_name=proc_name)
+    jumps = count_transitions_for_varying_heights(heights, proc_name=proc_name,
+                                                 **kwargs)
     np.save('%s-%d' % (file_name, idx), jumps)
     print('[%s] - closing worker %d' % (proc_name, idx))
 
@@ -210,21 +210,19 @@ if __name__ == '__main__':
     #  plt.show()
     #  sys.exit(0)
 
-    no_of_runs = 8
-    config_dict['x0']['a'] = 1.
-    heights = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7., 8.,
-                        9., 10., 12., 14., 16.])
+    PROCESSES   = 4
+    NO_OF_RUNS  = 8
+    HEIGHTS     = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7.,
+                            8., 9., 10., 12., 14., 16.])
+    MEASUREMENTS_CONFIG = dict(steps=10_000, ms_steps=100, width=1.6, sample=64)
 
 
     TEST = False
 
     if TEST:
-        jumps = count_transitions_for_varying_heights(heights, 10_000, 10)
-        plt.plot(heights, jumps)
-
-        jumps = count_transitions_for_varying_heights( heights, 1_000, 100)
-        plt.plot(heights, jumps)
-
+        jumps = count_transitions_for_varying_heights(
+            HEIGHTS, **MEASUREMENTS_CONFIG)
+        plt.plot(HEIGHTS, jumps)
         plt.show()
 
 
@@ -233,13 +231,16 @@ if __name__ == '__main__':
 
         start = time.time()
 
-        with Pool() as pool:
-            res = [pool.apply_async(worker, (heights, file_name, i))
-                   for i in range(no_of_runs)]
+        with Pool(PROCESSES) as pool:
+            res = [pool.apply_async(worker,
+                                    (idx, file_name, HEIGHTS),
+                                    MEASUREMENTS_CONFIG)
+                   for idx in range(NO_OF_RUNS)]
             for r in res:
                 r.wait()
 
-        print('\nexecution time: %f seconds' % (time.time() - start))
+        exec_time = time.time() - start
+        print('\nexecution time: %f seconds' % exec_time)
 
 
 
