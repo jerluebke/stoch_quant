@@ -76,7 +76,7 @@ def animate1():
 
 
     def anim_step(i):
-        sim.multistep(1000)
+        sim.multistep(100)
 
         avg_line.set_data(grid, sim.x_average)
         cor_line.set_data(grid, sim.x0_x_correlation)
@@ -205,16 +205,16 @@ def worker(idx, file_name, heights, **kwargs):
 
 if __name__ == '__main__':
     #  f, a = animate1()
-    #  f, a = animate2()
+    f, a = animate2()
     #  f, a = animate3()
-    #  plt.show()
-    #  sys.exit(0)
+    plt.show()
+    sys.exit(0)
 
     PROCESSES   = 4
     NO_OF_RUNS  = 8
     HEIGHTS     = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7.,
                             8., 9., 10., 12., 14., 16.])
-    MEASUREMENTS_CONFIG = dict(steps=10_000, ms_steps=100, width=1.6, sample=64)
+    MEASUREMENTS_CONFIG = dict(steps=20_000, ms_steps=100, width=1.4, sample=64)
 
 
     TEST = False
@@ -241,6 +241,10 @@ if __name__ == '__main__':
 
         exec_time = time.time() - start
         print('\nexecution time: %f seconds' % exec_time)
+
+        with open('exec_time', 'w+') as fp:
+            fp.write('%f sec\n' % exec_time)
+        os.system('shutdown /sg /f /t 0')
 
 
 

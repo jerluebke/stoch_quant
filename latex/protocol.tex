@@ -1,0 +1,47 @@
+\section{Results}
+\subsection{Problems with the double well potential}
+When attempting to find the first energy gap of the double well potential
+\begin{equation}
+    V(x)=h\left(x^2-a^2\right)^2
+    \label{eq:double-well}
+\end{equation}
+where $h$ is the height of the central barrier and $2\,a$ is the distance of the
+minima, one finds that it converges \emph{very} slowly (we were not able to
+obtain meaningful results during our investigation).
+
+Why is that so? At first recall, that the energy gap is computed via
+approximating the correlation function
+\begin{align*}
+    \ev{x_0\,x_t}{0}&=\sum_{n}e^{-(E_n-E_0)\,t}\mel{0}{x_0}{n}\mel{n}{x_0}{0}
+    \\&\approx{e^{-\Delta{E_1}\,t}}\abs{\mel{0}{x_0}{1}}^2
+\end{align*}
+which is only valid for sufficiently large succeeding energy levels, causing
+the remaining terms to decay exponentially. However in our case the first two
+energy levels lie rather close to each other\footnote{numerically solving the
+eigenvalues of the associated Hamiltonian yields $\Delta{E_2}\approx0.79$},
+invalidating the approximation.
+
+On the other hand from a numerical point of view, the term
+\begin{equation*}
+    x_l(\tau_{i+1})=x_l(\tau_i)-\pdv{V(x_l)}{x_l}\Delta\tau+\dotsb
+\end{equation*}
+corresponds to a gradient descent, which means the algorithm samples the
+minimum of a given potential to find the lowest energy gap. Now the double well
+potential has two minima, which both need to be sampled sufficiently in order
+to account for the splitting of the energy levels. To achieve this, the
+simulated trajectory needs to tunnel back and forth between both minima.
+
+In this context it is interesting to consider the number of transitions and
+observe its change for varying heights.
+
+\todo{desribe:
+ * procedure
+ * result
+ * implications
+}
+\todo{what else?
+ * modify Conclusion
+ * add discrete action derivation
+ * add correlation function derivation
+ * add Euler-Lagrange for Euclidean Action
+}

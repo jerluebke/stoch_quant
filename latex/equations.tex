@@ -1,0 +1,244 @@
+\documentclass[11pt,a4paper]{scrartcl}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+    \setdefaultlanguage{english}
+\usepackage{lmodern}
+\usepackage{fixcmex}
+\usepackage{csquotes}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{siunitx}
+    \sisetup{%
+        range-units=brackets,
+        separate-uncertainty=true}
+\usepackage{physics}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{graphicx}
+    \graphicspath{figures}
+\usepackage{tikz}
+    \usetikzlibrary{calc,external}
+    \tikzexternalize[prefix=extern/]
+    \tikzexternaldisable
+\usepackage{pgfplots}
+    \pgfplotsset{%
+        compat=1.15,
+        table/search path={data},
+    }
+\usepackage[makeroom]{cancel}
+\usepackage{todonotes}
+\usepackage[%
+    colorlinks=true, linkcolor=blue,
+    % hidelinks
+]{hyperref}
+\usepackage{cleveref}
+% \setlength\parindent{0pt}
+
+
+\newcommand{\tablehead}[1]{\multicolumn{1}{c}{#1}}
+\newcommand*{\figref}[1]{(see fig.~\ref{#1})}
+\newcommand{\eg}{e.\,g.}
+\newcommand{\ie}{i.\,e.}
+\newcommand{\action}{\ensuremath{\mathcal{S}}}
+\newcommand{\SD}{\ensuremath{\mathcal{S}_{\mathrm{D}}}}
+\newcommand{\SDh}{\mathcal{S}_{\mathrm{D},h}}
+\newcommand{\xdoti}{\ensuremath{\dot{x}_i}}
+\newcommand{\xdotj}{\ensuremath{\dot{x}_j}}
+\newcommand{\xdotjm}{\ensuremath{\dot{x}_{j-1}}}
+\newcommand{\deltaij}{\ensuremath{\delta_{ij}}}
+\newcommand{\OverDeltaT}[1]{\ensuremath{\frac{#1}{\Delta t}}}
+\newcommand{\DT}{\ensuremath{\mathrm{D}_t}}
+\newcommand{\OverTwoDeltaT}[1]{\ensuremath{\frac{#1}{2\, \Delta t}}}
+\newcommand{\xdotjp}{\ensuremath{\dot{x}_{j+1}}}
+\newcommand{\avg}[1]{\langle#1\rangle}
+\newcommand{\SE}{\mathcal{S}_{\mathrm{E}}}
+\newcommand{\SEh}{\mathcal{S}_{\mathrm{E},h}}
+\newcommand{\pathinth}[1]{\int\mathcal{D}[x]#1e^{-\SEh}}
+\newcommand{\pathint}[1]{\int\mathcal{D}[x]#1e^{-\SE}}
+\newcommand{\BigO}[1]{\mathcal{O}\left(#1\right)}
+\newcommand{\SED}{\mathcal{S}_{\mathrm{E,D}}}
+\newcommand{\SEDh}{\mathcal{S}_{\mathrm{E,D},h}}
+\newcommand{\xt}{\ensuremath{\tilde{x}}}
+\newcommand{\xh}{\ensuremath{x_{h}}}
+\newcommand{\tE}{\ensuremath{t_{\mathrm{E}}}}
+\DeclareMathOperator{\cov}{cov}
+
+
+\title{Some equations related to \emph{Stochastic Quantization}}
+\author{Jeremiah Lübke, Franz Wilfarth}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+
+\section*{Discrete Derivative of the Action Functional}
+The variable $x(t,\tau)$ gets discretized in time t. Note that x is is still continuously dependent on $\tau$.
+The Langevin-Equation is valid for every time step $t_i$:
+\begin{eqnarray*}
+    \dv{x_i}{\tau} &=& A_i + \zeta_i\\
+                &=& - \frac{1}{\Delta t} \pdv{V}{x_i} + \zeta_i
+\end{eqnarray*}
+To switch between discretized and continuous formulation after [Kis00] it is given that:
+\begin{equation*}
+    \frac{\delta}{\delta x} = \lim\limits_{\Delta t \to 0} \OverDeltaT{1} \pdv{}{x_i}
+\end{equation*}
+Damit 1.2 aus dem Protokoll sich in 1.5 übersetzt, muss ein $\Delta t$ hinzugefügt werden:
+\begin{equation*}
+    \langle \zeta_i \left(\tau \right) \zeta_j \left( \tau' \right) \rangle = 2 \frac{\delta_{ij}}{\Delta t} \delta\left( \tau - \tau' \right)
+\end{equation*}
+Let us assume that V(x) = $\mathcal{S}\left[x(t)\right]$.
+If we now take the limit for $\Delta t \rightarrow 0$ the continuous equation reads like:
+\begin{eqnarray*}
+    \pdv{x}{\tau} &=& - \frac{\delta \mathcal{S}\left[x(t)\right]}{\delta x}  + \zeta\\
+    \langle \zeta \left(t,\tau \right) \zeta \left( t',\tau' \right) \rangle &=& 2 \delta(t - t') \delta\left( \tau - \tau' \right)
+\end{eqnarray*}
+
+% Let us start with discretizing the functional:
+% \begin{equation*}
+%     \mathcal{S}\left[x(t)\right] = \int\dd{t}L\left(x(t), \dot{x}(t)\right)
+%     \quad\longrightarrow\quad
+%     \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)\Delta t
+% \end{equation*}
+% where $x(t) \longrightarrow x_i \equiv x(t_i)$ and $\dot{x}(t) \longrightarrow
+% \xdoti \equiv \OverTwoDeltaT{x_{i+1}-x_{i-1}}$. For convenience we write $L_i \equiv
+% L(x_i, \xdoti)$.\\
+
+
+
+% Now we compute the derivative:
+% \begin{equation*}
+%     \dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}\,\Delta t
+%     =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
+%     \Delta t
+% \end{equation*}
+% with
+% \begin{equation*}
+%     \pdv{x_i}{x_j}=\pdv{x(t_i)}{x(t_j)}=\delta(t_i-t_j)\longrightarrow\OverDeltaT{\deltaij}
+% \end{equation*}
+% and
+% \begin{align*}
+%     \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
+%     =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
+%     =\OverTwoDeltaT{\delta(t_{i+1}-t_j)-\delta(t_{i-1}-t_j)}
+%     \longrightarrow\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,(\Delta t)^2}.
+% \end{align*}
+% where we have used $\int\dd{t}\delta(t_i-t_j)\longrightarrow\sum\Delta{t}\frac{\delta_{i, j}}{\Delta{t}}$.\\
+
+% The $\delta$-s kill the sum, and we can write (pay attention to the indices):
+% \begin{align*}
+%     \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
+%     \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}\\
+%     &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)\\
+%     \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
+% \end{align*}
+% where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
+% operator.\\
+% This is exactly what we wanted to achieve.\\
+
+% For clarity, we make the transition back to the continuous description:
+% \begin{equation*}
+%     \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
+% \end{equation*}
+% which is the well known \emph{Euler-Lagrange-Equation}.
+
+
+\section*{Correlation Function}
+Show:
+\begin{equation*}
+    \cov(x_0, x_l) \equiv \avg{x_0 x_l}-\avg{x_0}\avg{x_l}
+    = \frac{\avg{x_l}_h-\avg{x_l}}{h}+\BigO{h}
+\end{equation*}
+
+\emph{Solution:}
+\begin{align*}
+    \eval{\dv{\avg{x_l}_h}{h}}_{h=0} &=
+    \eval{\dv{h}\frac{\pathinth{\,x_l\,}}{\pathinth{}}}_{h=0} \\ &=
+    \eval{\frac{\left(\pathinth{\,x_l x_0\,}\right)\left(\pathinth{}\right)
+    -\left(\pathinth{x_l}\right)\left(\pathinth{x_0}\right)}
+    {\left(\pathinth{}\right)^2}}_{h=0} \\ &=
+    \frac{\left(\pathint{\,x_0 x_l\,}\right)\left(\pathint{}\right)
+    -\left(\pathint{x_l}\right)\left(\pathint{x_0}\right)}
+    {\left(\pathint{}\right)^2} \\ &=
+    \avg{x_0 x_l}-\avg{x_0}\avg{x_l} \tag{i}
+\end{align*}
+Taylor at $h=0$ (where $\avg{x_l}_0\equiv\avg{x_l}$):
+\begin{equation*}
+    \avg{x_l}_h=\avg{x_l}_0+\eval{\dv{\avg{x_l}_h}{h}}_{h=0}\,h+\BigO{h^2}
+    \tag{ii}
+\end{equation*}
+\begin{equation*}
+    \overset{(\mathrm{i}),(\mathrm{ii})}{\implies}\eval{\dv{\avg{x_l}_h}{h}}_{h=0}
+    =\boxed{\avg{x_0 x_l}-\avg{x_0}\avg{x_l}
+    =\frac{\avg{x_l}_h-\avg{x_l}}{h}+\BigO{h}}
+\end{equation*}
+
+
+\section*{Implementation of the modified Action}
+Why the correspondance (see file \texttt{langevin\_solver.py}, line 145):
+\begin{equation*}
+    \SEh=\SE-h\,x_0 \iff \texttt{xh[0]+=h*dtau}\quad?
+\end{equation*}
+
+\emph{Solution:}
+\begin{equation*}
+    \dv{\SDh}{x_j}=\dv{\left(\SD-h\,x_0\right)}{x_j}=\dv{\SD}{x_j}-h\,\delta_{0,j}
+\end{equation*}
+
+Discretizing the Langevin equation with added source:
+\begin{gather*}
+    \pdv{\xh(t,\tau)}{\tau}=-\eval{\left(\fdv{\SEh[\xh]}{\xh}\right)}_{\xh=\xh(t,\tau)}+\zeta_h(t,\tau) \\
+    \longrightarrow
+    \xt_{i+1}^{l}=\xt_{i}^{l}-\left(\dv{\SED}{\xt_{i}^{l}}-h\,\delta_{0,l}\right)\Delta{\tau}+\tilde{\xi}_{i}^{l}
+\end{gather*}
+where $\xt_{i}^{l}\equiv\xh(t_l,\tau_i)$ and $\xi_{i}^{l}\equiv\sqrt{\frac{2\,\Delta{\tau}}{\Delta{t}}}R_{i}^{l}$, $R_{i}^{l}\in\mathcal{N}(0,1)$. \\
+For the Parisi Trick, one sets $R_{i}^{l}=\tilde{R}_{i}^{l}$.
+
+
+\section*{A quick note on the Euclidean Action}
+Consider the Wick rotation $t\longrightarrow \tE:=it$ with the Lagrangian $L(x, \dot{x})=\frac{m}{2}\dot{x}^2-V(x)$:
+\begin{align*}
+    \action\longrightarrow\SE&:=-i\action
+    =-i\int\frac{\dd\tE}{i}\left\{\frac{m}{2}\left(\pdv{x}{(\tE/i)}\right)^2-V(x)\right\} \\
+    &=-\int\dd\tE\left\{-\frac{m}{2}\left(\pdv{x}{\tE}\right)^2-V(x)\right\} \\
+    &=\int\dd\tE\left\{\frac{m}{2}\dot{x}^2+V(x)\right\}
+\end{align*}
+\begin{equation*}
+    \implies\fdv{\SE}{x}=\pdv{L}{x}-\dv{\tE}\pdv{L}{\dot{x}}
+    =-m\ddot{x}+\pdv{V}{x}
+\end{equation*}
+\newpage
+Let's assume that the Probability $P$ of a particle to change the side of a double well potential decays exponentially with the potential's height $h$. Moreover assume that the number of side changes of the particle $N$ is a measure for the propability to change the sides.
+\begin{align}
+    P \approx N(h) = N_0 \exp\left( -\frac{h}{\tau}\right)\label{eq:time1}
+\end{align}{}
+Then the $ln(N)$ should follow a linear correlation to the height.
+\begin{align}
+\begin{split}
+    \ln(N(h)) = m\cdot h + b\\
+    \begin{array}{cc}
+     m = -\tau^{-1} & b = \ln{N_0}
+    \end{array}
+\end{split} \label{eq:time2}
+\end{align}
+In \Cref{fig:logDecay} this correlation is shown. By linear regression, the parameters $m$ and $b$ can be calculated. By Error-Propagation $\tau$ can by calculated to $\tau = \SI{3.58(4)}{}$.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{figures/logDecayFit.pdf}
+    \caption{Decay of tunneling probability due to variing height of potential. The distance between the two minima is fixed with a = 1. We did 10000 iterations with 10 multisteps.}
+    \label{fig:logDecay}
+\end{figure}{}
+
+
+
+\newpage
+
+\input{protocol.tex}
+
+\end{document}
