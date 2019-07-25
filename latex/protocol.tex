@@ -32,7 +32,38 @@ to account for the splitting of the energy levels. To achieve this, the
 simulated trajectory needs to tunnel back and forth between both minima.
 
 In this context it is interesting to consider the number of transitions and
-observe its change for varying heights.
+observe its change for varying heights. This was done by performing a small
+fixed number of simulation steps (\emph{multistep}) and computing a short-term
+average over this span, which exhibits the small time-scales of the system, in
+contrast to the regular long-term average. When plotting the first, one finds
+that the trajectory behaves much more dynamically -- \eg~it tunnels between the
+two minima --, while the latter approaches some stable limit which lies between
+the minima. In order to quantify the number of transitions, one point in the
+middle of the trajectory was observed and a counter was incremented whenever
+its sign changed (\ie~it tunneled).
+
+Our measurements were recorded with fixed $a=1$ and $h\in[0.5,16]$; for each
+$h$, \num{10000} mutlisteps were performed, each consisting of 100 simulation
+steps. This was repeated 16 times with different seeds for numpy's PRNG and
+eventually mean and standard deviation were computed. The obtained data closely
+resembles an exponential relation
+\begin{equation*}
+    N(h)=N_0\,\exp\left(-\frac{h}{\tau}\right)
+\end{equation*}
+and indeed, when performing a linear regression on
+$\log(N_{\mathrm{measured}})$, one finds that it closely follows the linear
+relation
+\begin{equation*}
+    \log\left(N(h)\right)=m\,h+b
+\end{equation*}
+with $m=-\tau^{-1}$ and $b=\log{N_0}$. The results are plotted in
+\figref{fig:transitions}. Via error propagation, one finds
+$\tau=\num{3.58(4)}$.
+\todo{include figure}
+\todo{don't normalize!}
+
+Now, what does this tell us?
+
 
 \todo{desribe:
  * procedure
