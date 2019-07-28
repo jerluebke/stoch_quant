@@ -30,12 +30,13 @@ out     = odr.run()
 errorbar_config = dict(ecolor='black', capsize=3, ls='none', marker='o',
                        mec='red', mfc='red')
 
-plt.figure(figsize=(7, 5.25))
+plt.figure(figsize=(5, 3.75))
 plt.subplot(111)
 
 plt.errorbar(heights, mean, yerr=std, label='data', **errorbar_config)
 plt.plot(h_arr, np.exp(out.beta[1] + h_arr*out.beta[0]), 'b-',
-         label='linear fit, with\n$m=(-0.279\\pm{0.004})$,\n$b=(0.235\pm{0.019})$')
+         label='linear fit, with\n$m=(%.3f\\pm%.3f$)\n$b=(%.3f\\pm%.3f)$'
+                % (out.beta[0], out.sd_beta[0], out.beta[1], out.sd_beta[1]))
 
 plt.yscale('log')
 plt.grid(False)
