@@ -14,7 +14,8 @@
 \usepackage{siunitx}
     \sisetup{%
         range-units=brackets,
-        separate-uncertainty=true}
+        separate-uncertainty=true,
+    }
 \usepackage{physics}
 \usepackage{array}
 \usepackage{booktabs}
@@ -80,72 +81,75 @@
 \section*{Discrete Derivative of the Action Functional}
 The variable $x(t,\tau)$ gets discretized in time t. Note that x is is still continuously dependent on $\tau$.
 The Langevin-Equation is valid for every time step $t_i$:
-\begin{eqnarray*}
-    \dv{x_i}{\tau} &=& A_i + \zeta_i\\
-                &=& - \frac{1}{\Delta t} \pdv{V}{x_i} + \zeta_i
-\end{eqnarray*}
+\begin{align}
+    \dv{x_i}{\tau} &= A_i + \zeta_i\\
+                &= - \frac{1}{\Delta t} \pdv{V}{x_i} + \zeta_i\\
+    \pdv{p}{\tau} &= - \frac{1}{\Delta t} \pdv{A_i p}{x_i} + \frac{1}{\Delta t^2} \pdv[2]{p}{x_i}\\
+    &= - \frac{1}{\Delta t} \pdv{x_i} \left( - \frac{1}{\Delta t} \pdv{V}{x_i} p \right) + \frac{1}{\Delta t^2} \pdv[2]{p}{x_i}
+\end{align}
+\todo{oder $\Delta t ^2$ weiß nicht wie sich das genau übersetzt...}
 To switch between discretized and continuous formulation after [Kis00] it is given that:
 \begin{equation*}
-    \frac{\delta}{\delta x} = \lim\limits_{\Delta t \to 0} \OverDeltaT{1} \pdv{}{x_i}
+    \frac{\delta}{\delta x} = \lim\limits_{\Delta t \to 0} \OverDeltaT{1} \pdv{x_i}
 \end{equation*}
 Damit 1.2 aus dem Protokoll sich in 1.5 übersetzt, muss ein $\Delta t$ hinzugefügt werden:
 \begin{equation*}
     \langle \zeta_i \left(\tau \right) \zeta_j \left( \tau' \right) \rangle = 2 \frac{\delta_{ij}}{\Delta t} \delta\left( \tau - \tau' \right)
 \end{equation*}
-Let us assume that V(x) = $\mathcal{S}\left[x(t)\right]$.
+Let us assume that V(x) = $\action_\mathrm{E}\left[x(t)\right]$.
 If we now take the limit for $\Delta t \rightarrow 0$ the continuous equation reads like:
 \begin{eqnarray*}
     \pdv{x}{\tau} &=& - \frac{\delta \mathcal{S}\left[x(t)\right]}{\delta x}  + \zeta\\
     \langle \zeta \left(t,\tau \right) \zeta \left( t',\tau' \right) \rangle &=& 2 \delta(t - t') \delta\left( \tau - \tau' \right)
 \end{eqnarray*}
 
-% Let us start with discretizing the functional:
-% \begin{equation*}
-%     \mathcal{S}\left[x(t)\right] = \int\dd{t}L\left(x(t), \dot{x}(t)\right)
-%     \quad\longrightarrow\quad
-%     \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)\Delta t
-% \end{equation*}
-% where $x(t) \longrightarrow x_i \equiv x(t_i)$ and $\dot{x}(t) \longrightarrow
-% \xdoti \equiv \OverTwoDeltaT{x_{i+1}-x_{i-1}}$. For convenience we write $L_i \equiv
-% L(x_i, \xdoti)$.\\
+Let us start with discretizing the functional:
+\begin{equation*}
+    \mathcal{S}\left[x(t)\right] = \int\dd{t}L\left(x(t), \dot{x}(t)\right)
+    \quad\longrightarrow\quad
+    \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)\Delta t
+\end{equation*}
+where $x(t) \longrightarrow x_i \equiv x(t_i)$ and $\dot{x}(t) \longrightarrow
+\xdoti \equiv \OverTwoDeltaT{x_{i+1}-x_{i-1}}$. For convenience we write $L_i \equiv
+L(x_i, \xdoti)$.\\
 
 
 
-% Now we compute the derivative:
-% \begin{equation*}
-%     \dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}\,\Delta t
-%     =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
-%     \Delta t
-% \end{equation*}
-% with
-% \begin{equation*}
-%     \pdv{x_i}{x_j}=\pdv{x(t_i)}{x(t_j)}=\delta(t_i-t_j)\longrightarrow\OverDeltaT{\deltaij}
-% \end{equation*}
-% and
-% \begin{align*}
-%     \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
-%     =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
-%     =\OverTwoDeltaT{\delta(t_{i+1}-t_j)-\delta(t_{i-1}-t_j)}
-%     \longrightarrow\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,(\Delta t)^2}.
-% \end{align*}
-% where we have used $\int\dd{t}\delta(t_i-t_j)\longrightarrow\sum\Delta{t}\frac{\delta_{i, j}}{\Delta{t}}$.\\
+Now we compute the derivative:
+\begin{equation*}
+    \dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}\,\Delta t
+    =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
+    \Delta t
+\end{equation*}
+with
+\begin{equation*}
+    \pdv{x_i}{x_j}=\pdv{x(t_i)}{x(t_j)}=\delta(t_i-t_j)\longrightarrow\OverDeltaT{\deltaij}
+\end{equation*}
+and
+\begin{align*}
+    \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
+    =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
+    =\OverTwoDeltaT{\delta(t_{i+1}-t_j)-\delta(t_{i-1}-t_j)}
+    \longrightarrow\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,(\Delta t)^2}.
+\end{align*}
+where we have used $\int\dd{t}\delta(t_i-t_j)\longrightarrow\sum\Delta{t}\frac{\delta_{i, j}}{\Delta{t}}$.\\
 
-% The $\delta$-s kill the sum, and we can write (pay attention to the indices):
-% \begin{align*}
-%     \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
-%     \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}\\
-%     &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)\\
-%     \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
-% \end{align*}
-% where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
-% operator.\\
-% This is exactly what we wanted to achieve.\\
+The $\delta$-s kill the sum, and we can write (pay attention to the indices):
+\begin{align*}
+    \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
+    \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}\\
+    &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)\\
+    \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
+\end{align*}
+where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
+operator.\\
+This is exactly what we wanted to achieve.\\
 
-% For clarity, we make the transition back to the continuous description:
-% \begin{equation*}
-%     \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
-% \end{equation*}
-% which is the well known \emph{Euler-Lagrange-Equation}.
+For clarity, we make the transition back to the continuous description:
+\begin{equation*}
+    \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
+\end{equation*}
+which is the well known \emph{Euler-Lagrange-Equation}.
 
 
 \section*{Correlation Function}
@@ -242,3 +246,6 @@ In \Cref{fig:logDecay} this correlation is shown. By linear regression, the para
 \input{protocol.tex}
 
 \end{document}
+
+
+% vim: set ff=unix tw=79 sw=4 ts=4 et ic ai :
