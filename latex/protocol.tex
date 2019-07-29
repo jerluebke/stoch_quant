@@ -1,13 +1,13 @@
 \section{Results}
-\subsection{Problems with the double well potential}
-When attempting to find the first energy gap of the double well potential
+\subsection{Problems with the double-well potential}
+When attempting to find the first energy gap of the double-well potential
 \begin{equation}
     V(x)=h\left(x^2-a^2\right)^2
     \label{eq:double-well}
 \end{equation}
 where $h$ is the height of the central barrier and $2\,a$ is the distance of the
-minima, one finds that it converges \emph{very} slowly (we were not able to
-obtain meaningful results during our investigation).
+minima, one finds that the SQM-algorithm converges \emph{very} slowly (we were not
+able to obtain meaningful results during our investigation).
 
 Why is that so? At first recall, that the energy gap is computed via
 approximating the correlation function\todo{add reference to eq. 1.12 in the manual}
@@ -17,36 +17,45 @@ approximating the correlation function\todo{add reference to eq. 1.12 in the man
 \end{align*}
 which is only valid for sufficiently large succeeding energy levels, causing
 the remaining terms to decay exponentially. However in our case the first two
-energy levels lie rather close to each other\footnote{numerically solving the
-eigenvalues of the associated Hamiltonian yields $\Delta{E_2}\approx0.79$},
-invalidating the approximation.
+energy levels lie rather close to each other\todo{verify}\footnote{numerically solving the
+eigenvalues of the associated Hamiltonian for $m=1$, $h=1$, $a=1$ yields
+$\Delta{E_2}\approx0.79$}, invalidating the approximation.
 
 On the other hand from a numerical point of view, the term
 \begin{equation*}
     x_l(\tau_{i+1})=x_l(\tau_i)-\pdv{V(x_l)}{x_l}\Delta\tau+\dotsb
 \end{equation*}
 corresponds to a gradient descent, which means the algorithm samples the
-minimum of a given potential to find the lowest energy gap. Now the double well
+minimum of a given potential to find the lowest energy gap. Now the double-well
 potential has two minima, which both need to be sampled sufficiently in order
 to account for the splitting of the energy levels. To achieve this, the
-simulated trajectory needs to tunnel back and forth between both minima.
+simulated trajectory needs to tunnel back and forth through the barrier.
 
 In this context it is interesting to consider the number of transitions and
 observe its change for varying heights. This was done by performing a small
-fixed number of simulation steps (\textrightarrow~\emph{multistep}) and computing a short-term
-average over this span, which exhibits the small time-scales of the system, in
-contrast to the regular long-term average. When plotting the first, one finds
-that the trajectory behaves much more dynamically -- \eg~it tunnels between the
-two minima --, while the latter approaches some stable limit which lies between
-the minima. In order to quantify the number of transitions, one point in the
-middle of the trajectory was observed and a counter was incremented whenever
-its sign changed (\ie~it tunneled).
+fixed number of simulation steps (\textrightarrow~\emph{multistep}) and
+computing a short-term average over this span, which exhibits the small
+time-scales of the system, in contrast to the regular long-term average. When
+plotting the first, one finds that the trajectory behaves much more dynamically
+-- \eg~it tunnels between the two minima --, while the latter approaches some
+stable limit which lies between the minima. In order to quantify the number of
+transitions, a point in the middle of the trajectory was observed and a
+counter was incremented whenever its sign changed (\ie~it tunneled)
+\figref{fig:avg}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.75\textwidth]{figures/averages}
+    \caption{averaged trajectory after $\approx\num{64000}$ steps and
+    short-term average over \num{100} steps}
+    \label{fig:avg}
+\end{figure}
 
 Our measurements were recorded with fixed $a=1$ and $h\in[0.5,16]$; for each
 $h$, \num{10000} mutlisteps were performed, each consisting of 100 simulation
-steps. This was repeated 16 times with different seeds for numpy's PRNG and
-eventually mean and standard deviation were computed. The obtained data closely
-resembles an exponential relation
+steps. This was repeated 16 times with different seeds for \texttt{numpy}'s
+PRNG and eventually mean and standard deviation were computed. The obtained
+data closely resembles an exponential relation
 \begin{equation*}
     N(h)=N_0\,\exp\left(-\frac{h}{\tau}\right)
 \end{equation*}
@@ -56,8 +65,8 @@ relation
 \begin{equation*}
     \log\left(N(h)\right)=m\,h+b
 \end{equation*}
-with $m=-\tau^{-1}$ and $b=\log{N_0}$. The results are plotted in
-\figref{fig:transitions}. Via error propagation, one finds
+with $m=-\tau^{-1}$ and $b=\log{N_0}$ \figref{fig:transitions}. Via error
+propagation, one finds
 $\tau=\num{3.58(4)}$.
 
 \begin{figure}[h]
@@ -66,17 +75,40 @@ $\tau=\num{3.58(4)}$.
     \caption{Decay of the tunneling events with increasing height of the potential's barrier}
     \label{fig:transitions}
 \end{figure}
-\todo{Senhor, bitte ersetzen Sie das "," in der Legende bei "m" mit einer ")".}
 
-Now, what does this tell us?\todo{describe implications}
+This clearly shows, that the number of transitions decreases exponentially with
+increasing $h$, and therewith requiring much more simulation steps to obtain
+meaningful results.
 
-\vspace{3\baselineskip}
 
-\todo[inline]{what else? \\
- * modify Conclusion \\
- * add discrete action derivation - I don't like the derivation, cause you don't know how a second derivative could be calculated.
-}
 \newpage
+
+\section{Conclusion and Outlook}
+\dots Having understood the basics and technicalities of SQM for these
+examples, the next interesting step would be the double-well potential
+$V(x)=h\left(x^2-a^2\right)^2$.
+However, when trying to apply SQM directly to compute the first energy gap of
+this potential, one quickly finds this task to be non-trivial, since it
+requires a huge amount of simulation steps in order account for the splitting
+of the lowest energy levels by sufficiently sampling both minima. This requires
+a sufficient number of transitions, which exponentially decreases for
+increasing heights $h$, in turn requiring even more simulation steps for
+meaningful results. In this situation the advantage of the Parisi trick
+vanishes and one needs to think of a more clever way to address this problem.
+
+An alternative way could be provided by doing stochastic quantization
+\enquote{around} the fluctuating instantons in the double well (see \todo{add
+reference}[MY86]). In general \dots
+
+
+\vspace{5\baselineskip}
+
+
+\todo[inline]{discrete action derivation - I don't like the derivation, cause
+you don't know how a second derivative could be calculated.}
+
+\newpage
+
 \subsection{From Stochastic to Quantum Systems}
 ...\\
 \noindent The variable $x(t,\tau)$ gets discretized in time t. Note that x is is still continuously dependent on $\tau$. The Langevin-Equation is valid for every time step $t_i$. The two equations giving a proper description to the desired fictitious stochastic system
