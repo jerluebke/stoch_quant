@@ -129,6 +129,9 @@ def animate3():
     """animate long term average over total time and short term average after
     every multistep2 in one common ax
 
+    observe the short term average at x=64 and plot its value for increasing
+    tau
+
     returns created figure and animation object
     """
     fig, (ax_avg, ax_hist) = plt.subplots(1,2)
@@ -150,9 +153,9 @@ def animate3():
         avg2 = sim.multistep2(1000)
 
         avg1_line.set_data(grid, sim.x_average)
-        avg2_line.set_data(grid, avg2[...,0])
+        avg2_line.set_data(grid, avg2)
 
-        x[i] = avg2[0,0]
+        x[i] = avg2[64]
         line.set_data(t[:i], x[:i])
         ax_hist.set_xlim(-1,i+1)
 
@@ -208,8 +211,10 @@ if __name__ == '__main__':
     f, a = animate2()
     #  f, a = animate3()
     plt.show()
-    sys.exit(0)
+    #  sys.exit(0)
 
+
+if False:
     PROCESSES   = 4
     NO_OF_RUNS  = 8
     HEIGHTS     = np.array([.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7.,
