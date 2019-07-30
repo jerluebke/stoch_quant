@@ -1,5 +1,126 @@
-\section{Results}
-\subsection{Problems with the double-well potential}
+\documentclass[11pt,a4paper]{scrartcl}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+    \setdefaultlanguage{english}
+\usepackage{lmodern}
+\usepackage{fixcmex}
+\usepackage{csquotes}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{siunitx}
+    \sisetup{%
+        range-units=brackets,
+        separate-uncertainty=true,
+    }
+\usepackage{physics}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{graphicx}
+    \graphicspath{figures}
+\usepackage{tikz}
+    \usetikzlibrary{calc,external}
+    \tikzexternalize[prefix=extern/]
+    \tikzexternaldisable
+\usepackage{pgfplots}
+    \pgfplotsset{%
+        compat=1.15,
+        table/search path={data},
+    }
+\usepackage[makeroom]{cancel}
+\usepackage{todonotes}
+\usepackage[parfill]{parskip}
+\usepackage[%
+    colorlinks=true, linkcolor=blue,
+    % hidelinks
+]{hyperref}
+\usepackage{cleveref}
+
+
+\newcommand*{\figref}[1]{(see fig.~\ref{#1})}
+\newcommand{\eg}{e.\,g.}
+\newcommand{\ie}{i.\,e.}
+\newcommand{\action}{\ensuremath{\mathcal{S}}}
+\newcommand{\SD}{\ensuremath{\mathcal{S}_{\mathrm{D}}}}
+\newcommand{\xdoti}{\ensuremath{\dot{x}_i}}
+\newcommand{\xdotj}{\ensuremath{\dot{x}_j}}
+\newcommand{\xdotjm}{\ensuremath{\dot{x}_{j-1}}}
+\newcommand{\deltaij}{\ensuremath{\delta_{ij}}}
+\newcommand{\OverDeltaT}[1]{\ensuremath{\frac{#1}{\Delta t}}}
+\newcommand{\DT}{\ensuremath{\mathrm{D}_t}}
+\newcommand{\OverTwoDeltaT}[1]{\ensuremath{\frac{#1}{2\, \Delta t}}}
+\newcommand{\xdotjp}{\ensuremath{\dot{x}_{j+1}}}
+\newcommand{\avg}[1]{\langle#1\rangle}
+\newcommand{\SE}{\ensuremath{\mathcal{S}_{\mathrm{E}}}}
+\newcommand{\SEh}{\mathcal{S}_{\mathrm{E},h}}
+\newcommand{\pathinth}[1]{\int\mathcal{D}[x]#1e^{-\SEh}}
+\newcommand{\pathint}[1]{\int\mathcal{D}[x]#1e^{-\SE}}
+\newcommand{\BigO}[1]{\mathcal{O}\left(#1\right)}
+\newcommand{\tE}{\ensuremath{t_{\mathrm{E}}}}
+\DeclareMathOperator{\cov}{cov}
+
+
+\title{Extensions to the \emph{Stochastic Quantization Manual}}
+\author{Jeremiah Lübke, Franz Wilfarth}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+\subsubsection*{1.2.1 Parabolic Potential}
+\dots
+
+The harmonic oscillator is described by the Euclidean action
+\begin{align}
+    \action_\mathrm{E}\left[x(t)\right] =
+    \int\dd{t_\mathrm{E}}\left[\frac{m}{2}\dot{x}^2 +
+        \frac{1}{2}\,m\,\omega^2\,x^2\right]
+\end{align}
+with $x$ being $x = x(t, \tau )$ and the dot denoting the derivative with
+respect to $t_\mathrm{E}$ (for more details, \todo{link appears when using
+\texttt{section} instead of \texttt{section*}}see~\ref{app:derivSE}).
+
+\dots
+
+
+\section*{2 Numerical Approach and Discretization for 1-dimensional Quantum
+Mechanics}
+\dots Therefore consider a discretization of \todo{add reference}eq.~(1.6) in
+both the Euclidean time $t$ and the fictitious time $\tau$ (bearing in mind the
+notes \todo{see above}in~\ref{app:derivSE} and~\ref{app:deriv-discrete}):
+
+\dots
+
+The equivalence of those expressions can be easily verified by calculating the
+derivative
+\begin{align*}
+    \eval{\dv{\avg{x_l}_h}{h}}_{h=0} &=
+    \eval{\dv{h}\frac{\pathinth{\,x_l\,}}{\pathinth{}}}_{h=0} \\ &=
+    \eval{\frac{\left(\pathinth{\,x_l x_0\,}\right)\left(\pathinth{}\right)
+    -\left(\pathinth{x_l}\right)\left(\pathinth{x_0}\right)}
+    {\left(\pathinth{}\right)^2}}_{h=0} \\ &=
+    \frac{\left(\pathint{\,x_0 x_l\,}\right)\left(\pathint{}\right)
+    -\left(\pathint{x_l}\right)\left(\pathint{x_0}\right)}
+    {\left(\pathint{}\right)^2} \\ &=
+    \avg{x_0 x_l}-\avg{x_0}\avg{x_l} \tag{i}\label{eq:i}
+\end{align*}
+Note the Taylor expansion at $h=0$ (where $\avg{x_l}_0\equiv\avg{x_l}$):
+\begin{equation*}
+    \avg{x_l}_h=\avg{x_l}_0+\eval{\dv{\avg{x_l}_h}{h}}_{h=0}\,h+\BigO{h^2}
+    \tag{ii}\label{eq:ii}
+\end{equation*}
+Combining equation (\ref{eq:i}) and (\ref{eq:ii}) yields above expression.
+
+\dots
+
+
+\subsection*{4.3 Problems with the double-well potential}
 When attempting to find the first energy gap of the double-well potential
 \begin{equation}
     V(x)=h\left(x^2-a^2\right)^2
@@ -17,11 +138,11 @@ approximating the correlation function\todo{add reference to eq. 1.12 in the man
 \end{align*}
 which is only valid for sufficiently large succeeding energy levels, causing
 the remaining terms to decay exponentially. However in our case the first two
-energy levels lie rather close to each other\todo{verify}\footnote{numerically solving the
+energy levels lie rather close to each other\footnote{numerically solving the
 eigenvalues of the associated Hamiltonian for $m=1$, $h=1$, $a=1$ yields
 $\Delta{E_2}\approx0.79$}, invalidating the approximation.
 
-On the other hand from a numerical point of view, the term
+On the other hand -- from a numerical point of view -- the term
 \begin{equation*}
     x_l(\tau_{i+1})=x_l(\tau_i)-\pdv{V(x_l)}{x_l}\Delta\tau+\dotsb
 \end{equation*}
@@ -81,10 +202,10 @@ increasing $h$, and therewith requiring much more simulation steps to obtain
 meaningful results.
 
 
-\newpage
+\section*{5 Conclusion and Outlook}
+\dots
 
-\section{Conclusion and Outlook}
-\dots Having understood the basics and technicalities of SQM for these
+Having understood the basics and technicalities of SQM for these
 examples, the next interesting step would be the double-well potential
 $V(x)=h\left(x^2-a^2\right)^2$.
 However, when trying to apply SQM directly to compute the first energy gap of
@@ -101,163 +222,90 @@ An alternative way could be provided by doing stochastic quantization
 reference}[MY86]). In general \dots
 
 
-\vspace{5\baselineskip}
 
 
-\todo[inline]{discrete action derivation - I don't like the derivation, cause
-you don't know how a second derivative could be calculated.}
-
-\newpage
-
-\subsection{From Stochastic to Quantum Systems}
-...\\
-\noindent The variable $x(t,\tau)$ gets discretized in time t. Note that x is is still continuously dependent on $\tau$. The Langevin-Equation is valid for every time step $t_i$. The two equations giving a proper description to the desired fictitious stochastic system
-are the Langevin and the corresponding Fokker-Planck equation (A.18) 2\todo{here original links} , which shall be
-given in the form needed for the simulation
-
-\begin{align}
-    \dv{x_i}{\tau} &= A_i + \zeta_i\\
-    \pdv{p}{\tau} &= - \frac{1}{\Delta t} \pdv{A_i p}{x_i} + \frac{1}{\Delta t^2} \pdv[2]{p}{x_i}\\
-    \langle \zeta_i \left(\tau \right) \zeta_j \left( \tau' \right) \rangle &= 2 \frac{\delta_{ij}}{\Delta t} \delta\left( \tau - \tau' \right)
-\end{align}
-\noindent A stationary solution to this problem implies
-\begin{align}
-    \pdv{A_i p}{x_i} = \frac{1}{\Delta t} \pdv{p}{x_i} + const.
-\end{align}
-where the constant is set to be zero to ensure the proper decay of p in the infinity \todo{"infinity" war im Protokoll an dieser Stelle falsch  geschrieben} limit. Now let A be derived from a potential $V(x)$ via $A_i = - \frac{1}{\Delta t} \pdv{V}{x_i}$ which immediately results in a stationary solution of the form
-
-\begin{align}
-    p = c \cdot e^{-V(x)}
-\end{align}{}
-
-\noindent So the Langevin and the Fokker-Planck equation can be rewritten as
-\begin{align}
-    \dv{x_i}{\tau} &= - \frac{1}{\Delta t} \pdv{V}{x_i} + \zeta_i\\
-    \pdv{p}{\tau} &= - \frac{1}{\Delta t} \pdv{x_i} \left( - \frac{1}{\Delta t} \pdv{V}{x_i} p \right) + \frac{1}{\Delta t^2} \pdv[2]{p}{x_i}
-\end{align}{}
-
-...\\
-When performing the limit one has to take into account that the partial derivatives $\dv{x_i}$ / $\partial_i$ \todo{Which Schreibweise should be used? The short one of the original protocol or our one?} become a functional derivative $\fdv{x}$. To switch between discretized and continuous formulation after [Kis00] it is given that:
-\begin{equation}
-    \fdv{x} = \lim\limits_{\Delta t \to 0} \OverDeltaT{1} \pdv{x_i}
-\end{equation}
-...\\
-\\
-\subsection{Parabolic Potential}
-
-...\\
-The harmonic oscillator is described by the Euclidean action
-\begin{align}
-    \action_\mathrm{E}\left[x(t)\right] = \int\dd{t_\mathrm{E}}\left[\frac{m}{2}\dot{x}^2 + \frac{1}{2} m \omega x^2\right]
-\end{align}
-with $x$ being $x = x(t, \tau )$ and the dot denoting the derivative with respect to $t_\mathrm{E}$ (\ref{app:derivSE}).\\
-...
-
-\subsection{Numerical Approach and Discretization
-for 1-dimensional Quantum Mechanics}
-...\\
-The equivalence of those expressions can be easily verified by calculating the derivative\\
-\begin{align*}
-    \eval{\dv{\avg{x_l}_h}{h}}_{h=0} &=
-    \eval{\dv{h}\frac{\pathinth{\,x_l\,}}{\pathinth{}}}_{h=0} \\ &=
-    \eval{\frac{\left(\pathinth{\,x_l x_0\,}\right)\left(\pathinth{}\right)
-    -\left(\pathinth{x_l}\right)\left(\pathinth{x_0}\right)}
-    {\left(\pathinth{}\right)^2}}_{h=0} \\ &=
-    \frac{\left(\pathint{\,x_0 x_l\,}\right)\left(\pathint{}\right)
-    -\left(\pathint{x_l}\right)\left(\pathint{x_0}\right)}
-    {\left(\pathint{}\right)^2} \\ &=
-    \avg{x_0 x_l}-\avg{x_0}\avg{x_l} \tag{i}\label{eq:i}
-\end{align*}
-Note the Taylor expansion at $h=0$ (where $\avg{x_l}_0:=\avg{x_l}$):
-\begin{equation*}
-    \avg{x_l}_h=\avg{x_l}_0+\eval{\dv{\avg{x_l}_h}{h}}_{h=0}\,h+\BigO{h^2}
-    \tag{ii}\label{eq:ii}
-\end{equation*}
-Combining equation (\ref{eq:i}) and (\ref{eq:ii}) the expression above is obtained.\\
-...\\
-
-\newpage
-\subsection{Appendix: Functional derivative of $\SE$\label{app:derivSE}}
-
-Assume the Lagrangian to be $L(x,\dot{x})=\frac{m}{2} \dot{x}^2-V(x)$. So the action $\action$ can be written as:
+\section*{C On the functional derivative of the action \action}
+\subsection*{C.1 The euclidean action \SE}
+\label{app:derivSE}
+Assume the Lagrangian to be $L(x,\dot{x})=\frac{m}{2} \dot{x}^2-V(x)$. So the
+action $\action$ can be written as:
 \begin{align}
     \action\left[x(t)\right] = \int\limits_{t_0}^{t_1}\dd{t}L\left(x(t), \dot{x}(t)\right) = \int\limits_{t_0}^{t_1}\dd{t}\left[\frac{m}{2}\dot{x}^2-V(x)\right]\label{eq:S}
 \end{align}
-\noindent Note that by Wick rotation $t\longrightarrow \tE:=it$. Now $L(x,\dot{x})$ is dependent on $\tE$.
+Note that by Wick rotation $t\longrightarrow \tE:=it$. Now $L(x,\dot{x})$ is
+dependent on \tE.
 \begin{align}
-    \action\longrightarrow\SE:&=-i\action
-    =-i\int\dd\frac{\tE}{i}\left[\frac{m}{2}\left(\pdv{x}{(\tE/i)}\right)^2-V(x)\right] \\
-    &=-\int\dd\tE\left[-\frac{m}{2}\left(\pdv{x}{\tE}\right)^2-V(x)\right] \\
-    &=\int\dd\tE\left[\frac{m}{2}\dot{x}^2+V(x)\right] =  \int\dd\tE L_\mathrm{E}\left(x(t_\mathrm{E}), \dot{x}(t_\mathrm{E})\right)\label{eq:SE}
+    \action\longrightarrow\SE:=-i\action
+    &=\int\dd{\tE}L_\mathrm{E}\left(x(t_\mathrm{E}),
+    \dot{x}(t_\mathrm{E})\right) \nonumber \\
+    &=-i\int\dd\frac{\tE}{i}\left[\frac{m}{2}\left(\pdv{x}{(\tE/i)}\right)^2-V(x)\right]
+    \nonumber \\
+    &=-\int\dd\tE\left[-\frac{m}{2}\left(\pdv{x}{\tE}\right)^2-V(x)\right]
+    \nonumber \\
+    &=\int\dd\tE\left[\frac{m}{2}\dot{x}^2+V(x)\right] \label{eq:SE}
 \end{align}
 
-\noindent By comparison of \cref{eq:S} and \cref{eq:SE} it can be seen that the Lagrangian of the Wick rotated action has another sign before it's potential: $L_\mathrm{E}(x,\dot{x})=\frac{m}{2} \dot{x}^2+V(x)$.
+By comparison of \cref{eq:S} and \cref{eq:SE} it can be seen that the
+Lagrangian of the Wick rotated action has a different sign in front of it's
+potential, resulting in the following Euler-Lagrange-Equation:
+\begin{equation}
+    \boxed{%
+        \fdv{\SE}{x}=\pdv{L}{x}-\dv{\tE}\pdv{L}{\dot{x}}=-m\ddot{x}+\pdv{V}{x}
+    }
+\end{equation}
 
-\noindent The functional derivative is defined in (\ref{eq:func}) where $\Phi$ is an arbitrary function vanishing at the endpoints of the path.
-\begin{align}{}
-    \int\limits_{t_0}^{t_1} \dd{t} \fdv{\action}{x} \Phi (t) &= \dv{\varepsilon} \action [y(t)]\bigg|_{\varepsilon = 0}\quad \text{where} \quad y(t) = x(t) + \varepsilon \Phi(t) \label{eq:func}\\
-    &= \dv{\varepsilon} \int\limits_{t_0}^{t_1}\dd{t}L\left(y, \dot{y}(t)\right)\bigg|_{\varepsilon = 0} = \int\limits_{t_0}^{t_1}\dd{t}\pdv{L}{y}\dv{y}{\varepsilon} + \pdv{L}{\dot{y}}\dv{\dot{y}}{\varepsilon}\bigg|_{\varepsilon = 0}\\
-    &= \int\limits_{t_0}^{t_1}\dd{t}\pdv{L}{x}\Phi + \pdv{L}{\dot{x}}\dot{\Phi} = \int\limits_{t_0}^{t_1}\dd{t}\pdv{L}{x}\Phi + \left[ \pdv{L}{\dot{x}} \Phi\right]_{t_0}^{t_1}- \int \limits_{t_0}^{t_1} \dd{t} \dv{t}\pdv{L}{\dot{x}}\Phi\\
-    &= \int\limits_{t_0}^{t_1}\dd{t}\left( \pdv{L}{x} - \dv{t}\pdv{L}{\dot{x}} \right)\Phi
-\end{align}
-Finally the functional derivatives of $\action$ and $\action_\mathrm{E}$ can be written as:
-\begin{align}{}
-    \fdv{\action}{x}&= \pdv{L}{x} - \dv{t} \pdv{L}{\dot{x}} = - \pdv{V}{x} - m \ddot{x}\\
-    \fdv{\action_\mathrm{E}}{x}&= \pdv{L_\mathrm{E}}{x} - \dv{t_\mathrm{E}} \pdv{L_\mathrm{E}}{\dot{x}} = \pdv{V}{x} - m \ddot{x}
-\end{align}{}
-\\
-\todo{protokoll Seite 24, A.19: $\partial_j$ falsch}
 
+\subsection*{C.2 Discrete functional derivative}
+\label{app:deriv-discrete}
+In order to show the correspondence between the continuous functional
+derivative and its application in a discrete framework, the derivative of the
+discretized action is computed.
+
+Let us start with discretizing the functional:
+\begin{equation}
+    \mathcal{S}\left[x(t)\right] = \int\dd{t}L\left(x(t), \dot{x}(t)\right)
+    \quad\longrightarrow\quad
+    \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)\Delta t
+\end{equation}
+where $x(t) \longrightarrow x_i = x(t_i)$ and $\dot{x}(t) \longrightarrow
+\xdoti = \OverTwoDeltaT{x_{i+1}-x_{i-1}}$. For convenience we write $L_i = L(x_i, \xdoti)$.
+
+We compute the derivative:
+\begin{equation}
+    \dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}\,\Delta t
+    =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
+    \Delta t
+\end{equation}
+with
+\begin{subequations}
+\begin{gather}
+    \pdv{x_i}{x_j}=\OverDeltaT{\deltaij} \\
+    \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
+    =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
+    =\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,(\Delta t)^2}.
+\end{gather}
+\end{subequations}
+
+The Kronecker $\delta$-s kill the sum, and we can write (pay attention to the indices):
 \begin{align}
-    \dv{\varepsilon} \action [y(t)]\bigg|_{\varepsilon = 0} &= \lim_{\varepsilon \to 0} \frac{1}{\varepsilon}(\action[y(t)] - \action[x(t)])\quad \text{where} \quad y(t) = x(t) + \varepsilon \Phi(t)\\
-    \fdv{\action}{x}&= \lim_{\varepsilon \to 0} \frac{1}{\varepsilon}(\action[x(t) + \varepsilon \delta (t-t')] - \action[x(t)])\label{eq:deltafunc}
-\end{align}{}
+    \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
+    \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}
+    \nonumber \\
+    &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)
+    \nonumber \\
+    \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
+\end{align}
+where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
+operator.
+This is exactly what we wanted to achieve.
 
-An easy way to calculate $\fdv{\action}{x}$ is given by \cref{eq:deltafunc}.\todo{Weiß nicht, ob das folgende dir in deinen Überlegungen hilft, aber das wurde auch noch in [Kis00] angeführt...}
+For clarity, we make the transition back to the continuous description:
+\begin{equation}
+    \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
+\end{equation}
+which is the well known \emph{Euler-Lagrange-Equation}.
 
-% \subsection{Appendix: Discrete derivative of $\action$}
 
-% Let us start with discretizing the functional:
-% \begin{equation*}
-%     \mathcal{S}\left[x(t)\right] = \int\dd{t}L\left(x(t), \dot{x}(t)\right)
-%     \quad\longrightarrow\quad
-%     \SD\left(\{x_i\}\right) = \sum_i L\left(x_i, \xdoti\right)\Delta t
-% \end{equation*}
-% where $x(t) \longrightarrow x_i = x(t_i)$ and $\dot{x}(t) \longrightarrow
-% \xdoti = \OverTwoDeltaT{x_{i+1}-x_{i-1}}$. For convenience we write $L_i = L(x_i, \xdoti)$.\\
+\end{document}
 
-% \noindent We compute the derivative:
-% \begin{equation*}
-%     \dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}\,\Delta t
-%     =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
-%     \Delta t
-% \end{equation*}
-% with
-% \begin{equation*}
-%     \pdv{x_i}{x_j}=\OverDeltaT{\deltaij}
-% \end{equation*}
-% and
-% \begin{align*}
-%     \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
-%     =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
-%     =\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,(\Delta t)^2}.
-% \end{align*}
-
-% \noindent The Kronecker $\delta$-s kill the sum, and we can write (pay attention to the indices):
-% \begin{align*}
-%     \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
-%     \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}\\
-%     &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)\\
-%     \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
-% \end{align*}
-% where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
-% operator.\\
-% This is exactly what we wanted to achieve.\\
-
-% For clarity, we make the transition back to the continuous description:
-% \begin{equation*}
-%     \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
-% \end{equation*}
-% which is the well known \emph{Euler-Lagrange-Equation}.
-
-vim: set ff=unix tw=79 sw=4 ts=4 et ic ai :
+% vim: set ff=unix tw=79 sw=4 ts=4 et ic ai :
