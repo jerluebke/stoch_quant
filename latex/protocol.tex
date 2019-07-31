@@ -287,14 +287,15 @@ with
 \end{subequations}
 
 The Kronecker $\delta$-s kill the sum, and we can write (pay attention to the indices):
-\begin{align}
+\begin{align*}
     \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
     \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}
-    \nonumber \\
+    \\
     &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)
-    \nonumber \\
-    \implies\Aboxed{\dv{\SD}{x_j}&=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
-\end{align}
+\end{align*}
+\begin{equation}
+    \implies\boxed{\dv{\SD}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
+\end{equation}
 where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
 operator.
 This is exactly what we wanted to achieve.

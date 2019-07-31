@@ -12,7 +12,7 @@ heights = np.array([
     5., 6., 7., 8., 9., 10., 12., 14., 16.
 ])
 h_arr   = np.linspace(0, 16.5)
-jumps   = np.load('all-results-a1.npy')
+jumps   = np.load('../langevin_simulation/results/all-results-a1.npy')
 mean    = jumps.mean(axis=1)
 std     = jumps.std(axis=1)
 
@@ -28,14 +28,14 @@ out     = odr.run()
 
 
 # PLOTTING
-errorbar_config = dict(ecolor='black', capsize=3, ls='none', marker='o',
-                       mec='red', mfc='red')
+errorbar_config = dict(ecolor='tab:gray', capsize=2.5, ls='none', lw=1.2,
+                       marker='o', ms=4, mec='tab:red', mfc='tab:red')
 
-plt.figure(figsize=(5, 3.75))
+plt.figure(figsize=(5, 3.75), dpi=300)
 plt.subplot(111)
 
 plt.errorbar(heights, mean, yerr=std, label='data', **errorbar_config)
-plt.plot(h_arr, np.exp(out.beta[1] + h_arr*out.beta[0]), 'b-',
+plt.plot(h_arr, np.exp(out.beta[1] + h_arr*out.beta[0]), c='tab:blue',
          label='linear fit, with\n$m=(%.3f\\pm%.3f$)\n$b=(%.3f\\pm%.3f)$'
                 % (out.beta[0], out.sd_beta[0], out.beta[1], out.sd_beta[1]))
 
@@ -52,4 +52,4 @@ plt.savefig('transitions.pdf', dpi=300, bbox_inches='tight')
 #  plt.show()
 
 
-#  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai : 
+#  vim: set ff=unix tw=79 sw=4 ts=8 et ic ai :
