@@ -75,46 +75,51 @@
 \maketitle
 
 \section*{Herleitung}
-Lagevin-Gleichung:
-\begin{gather*}
+Lagevin-Gleichung und Fokker-Planck-Gleichung:
+\begin{gather}
     \pdv{x_i}{\tau}=A_i+\zeta_i \qc x_i, A_i, \zeta_i \in \mathbb{R}^n \\
-    A_i\,p=\partial_i{p}+c \qc A_i=-\partial_i{V} \implies
-    p=c\,e^{-V(\vec{x})}
+    \pdv{p}{\tau}=-\OverDeltaT{1}\pdv{(A_i\,p)}{x_i}+\frac{1}{\left(\Delta{t}\right)^2}\pdv[2]{p}{x_i}
+    \label{eq:fp}
+\end{gather}
+\begin{gather*}
+    \partial_{\tau}p=0 \implies \Delta{t}\,\partial_i(A_i\,p)=\partial_i^2{p}
+    \overset{\mathrm{integrating}}{\implies} \Delta{t}\,A_i\,p=\partial_i{p}+c \\
+    \Delta{t}\,A_i=-\partial_i{V} \implies
+    p=c\,e^{\Delta{t}\int\vec{A}\dd[n]{x}}=c\,e^{-V(\vec{x})}
 \end{gather*}
 
 Übergang zur funktionalen Beschreibung.
 Die $\mathbb{R}^n$-Vektoren werden als Sample-Menge einer diskreten Beschreibung
-aufgefasst (n Punkte entlang eines Pfades) und es wird der kontinuierliche
+aufgefasst ($n$ Punkte entlang eines Pfades) und es wird der kontinuierliche
 Grenzfall betrachtet:
-\begin{gather*}
-    x_i=x(t_i,\tau) \qc \Delta{t}=t_{i+1}-t_i \\
+\begin{gather}
+    x_i=x(t_i,\tau) \qc \Delta{t}=t_{i+1}-t_i \nonumber \\
     V(x_i)=\SED[x_i(\tau)]
     \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
-    \SE[x(t_i, \tau)] \\
-    \pdv{V}{x_i}
-    \overset{?}{=}
-    \frac{1}{\Delta{t}}\pdv{\SED[x_i(\tau)]}{x_i(\tau)}
-    \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
-    \fdv{\SE[x(t_i,\tau)]}{x(t_i,\tau)}
-\end{gather*}\todo{korrekt?}
+    \SE[x(t, \tau)] \nonumber \\
+    \lim_{\Delta{t}\to{0}}(-A_i)
+    =\lim_{\Delta{t}\to{0}}\OverDeltaT{1}\pdv{V}{x}
+    =\lim_{\Delta{t}\to{0}}\frac{1}{\Delta{t}}\pdv{\SED[x_i(\tau)]}{x_i(\tau)}
+    =\fdv{\SE[x(t,\tau)]}{x(t,\tau)}
+\end{gather}
 
 Damit ist die kontinuierliche Lagevin-Gleichung:
-\begin{equation*}
-    \implies\pdv{x(t,\tau)}{\tau}=-\fdv{\SE[x(t,\tau)]}{x(t,\tau)}+\zeta(t,\tau)
-\end{equation*}
+\begin{equation}
+    \implies\boxed{\pdv{x(t,\tau)}{\tau}=-\fdv{\SE[x(t,\tau)]}{x(t,\tau)}+\zeta(t,\tau)}
+\end{equation}
 
 
 Was ist nun $\frac{1}{\Delta{t}}\pdv{\SED}{x_i}$? \textrightarrow~siehe \textbf{C.2}
-\begin{equation*}
+\begin{equation}
     \frac{1}{\Delta{t}}\pdv{\SED}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_j}{\dot{x}_j}\right)
     =-m\ddot{x}_j+\partial_j{\mathrm{Potential}}
-\end{equation*}
+\end{equation}
 
 Für unseren Fall ist dann die diskrete (in $t$ und $\tau$) Lagevin-Gleichung mit
 $x(t_l,\tau_i)=x_l^i$:
-\begin{equation*}
+\begin{equation}
     \frac{x_l^{i+1}-x_l^i}{\Delta\tau}=m\frac{x_{l+1}^i-2\,x_l^i+x_{l-1}^i}{\left(\Delta{t}\right)^2}-\pdv{\mathrm{Potential}(x_l^i)}{x_l^i}+\sqrt{\frac{2}{\Delta{t}\,\Delta\tau}}\,R_l^i
-\end{equation*}
+\end{equation}
 
 \subsection*{Notizen zum Rauschen}
 \begin{gather*}
