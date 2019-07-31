@@ -56,6 +56,7 @@
 \newcommand{\xdotjp}{\ensuremath{\dot{x}_{j+1}}}
 \newcommand{\avg}[1]{\langle#1\rangle}
 \newcommand{\SE}{\ensuremath{\mathcal{S}_{\mathrm{E}}}}
+\newcommand{\SED}{\ensuremath{\mathcal{S}_{\mathrm{E,D}}}}
 \newcommand{\SEh}{\mathcal{S}_{\mathrm{E},h}}
 \newcommand{\pathinth}[1]{\int\mathcal{D}[x]#1e^{-\SEh}}
 \newcommand{\pathint}[1]{\int\mathcal{D}[x]#1e^{-\SE}}
@@ -72,6 +73,62 @@
 \begin{document}
 
 \maketitle
+
+\section*{Herleitung}
+Lagevin-Gleichung:
+\begin{gather*}
+    \pdv{x_i}{\tau}=A_i+\zeta_i \qc x_i, A_i, \zeta_i \in \mathbb{R}^n \\
+    A_i\,p=\partial_i{p}+c \qc A_i=-\partial_i{V} \implies
+    p=c\,e^{-V(\vec{x})}
+\end{gather*}
+
+Übergang zur funktionalen Beschreibung.
+Die $\mathbb{R}^n$-Vektoren werden als Sample-Menge einer diskreten Beschreibung
+aufgefasst (n Punkte entlang eines Pfades) und es wird der kontinuierliche
+Grenzfall betrachtet:
+\begin{gather*}
+    x_i=x(t_i,\tau) \qc \Delta{t}=t_{i+1}-t_i \\
+    V(x_i)=\SED[x_i(\tau)]
+    \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
+    \SE[x(t_i, \tau)] \\
+    \pdv{V}{x_i}
+    \overset{?}{=}
+    \frac{1}{\Delta{t}}\pdv{\SED[x_i(\tau)]}{x_i(\tau)}
+    \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
+    \fdv{\SE[x(t_i,\tau)]}{x(t_i,\tau)}
+\end{gather*}\todo{korrekt?}
+
+Damit ist die kontinuierliche Lagevin-Gleichung:
+\begin{equation*}
+    \implies\pdv{x(t,\tau)}{\tau}=-\fdv{\SE[x(t,\tau)]}{x(t,\tau)}+\zeta(t,\tau)
+\end{equation*}
+
+
+Was ist nun $\frac{1}{\Delta{t}}\pdv{\SED}{x_i}$? \textrightarrow~siehe \textbf{C.2}
+\begin{equation*}
+    \frac{1}{\Delta{t}}\pdv{\SED}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_j}{\dot{x}_j}\right)
+    =-m\ddot{x}_j+\partial_j{\mathrm{Potential}}
+\end{equation*}
+
+Für unseren Fall ist dann die diskrete (in $t$ und $\tau$) Lagevin-Gleichung mit
+$x(t_l,\tau_i)=x_l^i$:
+\begin{equation*}
+    \frac{x_l^{i+1}-x_l^i}{\Delta\tau}=m\frac{x_{l+1}^i-2\,x_l^i+x_{l-1}^i}{\left(\Delta{t}\right)^2}-\pdv{\mathrm{Potential}(x_l^i)}{x_l^i}+\sqrt{\frac{2}{\Delta{t}\,\Delta\tau}}\,R_l^i
+\end{equation*}
+
+\subsection*{Notizen zum Rauschen}
+\begin{gather*}
+    \langle\zeta(t_i,\tau_m)\,\zeta(t_j,\tau_l)\rangle=2\,\delta(t_i-t_j)\,\delta(\tau_m-\tau_l)
+    \\
+    \text{diskret}\longrightarrow\langle\zeta_i^m\,\zeta_j^l\rangle=2\frac{\delta_{ij}}{\Delta{t}}\frac{\delta_{ml}}{\Delta{\tau}}
+    \\
+    R_i^l\in\mathcal{N}(0,1)\qq{mit}\langle{R_i^m\,R_j^l}\rangle=\delta_{ij}\,\delta_{ml}
+    \implies \zeta_i^l=\sqrt{\frac{2}{\Delta{t}\,\Delta{\tau}}}\,R_i^l
+\end{gather*}
+
+
+\newpage
+
 
 \subsubsection*{1.2.1 Parabolic Potential}
 \dots
@@ -272,29 +329,28 @@ where $x(t) \longrightarrow x_i = x(t_i)$ and $\dot{x}(t) \longrightarrow
 
 We compute the derivative:
 \begin{equation}
-    \dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}\,\Delta t
+    \OverDeltaT{1}\dv{\SD}{x_j} =\sum_i\dv{L_i}{x_j}
     =\sum_i\left(\pdv{L_i}{x_i}\pdv{x_i}{x_j}+\pdv{L_i}{\xdoti}\pdv{\xdoti}{x_j}\right)
-    \Delta t
 \end{equation}
 with
 \begin{subequations}
 \begin{gather}
-    \pdv{x_i}{x_j}=\OverDeltaT{\deltaij} \\
+    \pdv{x_i}{x_j}=\deltaij \\
     \pdv{\xdoti}{x_j}=\pdv{\OverTwoDeltaT{x_{i+1}-x_{i-1}}}{x_j}
     =\OverTwoDeltaT{1}\left(\pdv{x_{i+1}}{x_j}-\pdv{x_{i-1}}{x_j}\right)
-    =\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,(\Delta t)^2}.
+    =\frac{\delta_{i+1,j}-\delta_{i-1,j}}{2\,\Delta t}.
 \end{gather}
 \end{subequations}
 
 The Kronecker $\delta$-s kill the sum, and we can write (pay attention to the indices):
 \begin{align*}
-    \dv{\SD}{x_j}&=\left[\OverDeltaT{1}\pdv{L_j}{x_j}+\frac{1}{2\,(\Delta{t})^2}
-    \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)\right]\Delta{t}
+    \OverDeltaT{1}\dv{\SD}{x_j}&=\pdv{L_j}{x_j}+\frac{1}{2\,\Delta{t}}
+    \left(\pdv{L_{j-1}}{\xdotjm}-\pdv{L_{j+1}}{\xdotjp}\right)
     \\
     &=\pdv{L_j}{x_j}-\OverTwoDeltaT{1}\left(\pdv{L_{j+1}}{\xdotjp}-\pdv{L_{j-1}}{\xdotjm}\right)
 \end{align*}
 \begin{equation}
-    \implies\boxed{\dv{\SD}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
+    \implies\boxed{\OverDeltaT{1}\dv{\SD}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
 \end{equation}
 where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
 operator.
@@ -302,7 +358,9 @@ This is exactly what we wanted to achieve.
 
 For clarity, we make the transition back to the continuous description:
 \begin{equation}
-    \dv{\SD}{x_j}\longrightarrow\fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
+    \OverDeltaT{1}\dv{\SD}{x_j}
+    \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
+    \fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
 \end{equation}
 which is the well known \emph{Euler-Lagrange-Equation}.
 
