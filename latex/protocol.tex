@@ -62,6 +62,7 @@
 \newcommand{\pathint}[1]{\int\mathcal{D}[x]#1e^{-\SE}}
 \newcommand{\BigO}[1]{\mathcal{O}\left(#1\right)}
 \newcommand{\tE}{\ensuremath{t_{\mathrm{E}}}}
+\newcommand{\nReals}{\ensuremath{\mathbb{R}^N}}
 \DeclareMathOperator{\cov}{cov}
 
 
@@ -74,65 +75,84 @@
 
 \maketitle
 
-\section*{Herleitung}
-Lagevin-Gleichung und Fokker-Planck-Gleichung:
-\begin{gather}
-    \pdv{x_i}{\tau}=A_i+\zeta_i \qc x_i, A_i, \zeta_i \in \mathbb{R}^n \\
-    \pdv{p}{\tau}=-\OverDeltaT{1}\pdv{(A_i\,p)}{x_i}+\frac{1}{\left(\Delta{t}\right)^2}\pdv[2]{p}{x_i}
-    \label{eq:fp}
-\end{gather}
-\begin{gather*}
-    \partial_{\tau}p=0 \implies \Delta{t}\,\partial_i(A_i\,p)=\partial_i^2{p}
-    \overset{\mathrm{integrating}}{\implies} \Delta{t}\,A_i\,p=\partial_i{p}+c \\
-    \Delta{t}\,A_i=-\partial_i{V} \implies
-    p=c\,e^{\Delta{t}\int\vec{A}\dd[n]{x}}=c\,e^{-V(\vec{x})}
-\end{gather*}
-
-Übergang zur funktionalen Beschreibung.
-Die $\mathbb{R}^n$-Vektoren werden als Sample-Menge einer diskreten Beschreibung
-aufgefasst ($n$ Punkte entlang eines Pfades) und es wird der kontinuierliche
-Grenzfall betrachtet:
-\begin{gather}
-    x_i=x(t_i,\tau) \qc \Delta{t}=t_{i+1}-t_i \nonumber \\
-    V(x_i)=\SED[x_i(\tau)]
-    \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
-    \SE[x(t, \tau)] \nonumber \\
-    \lim_{\Delta{t}\to{0}}(-A_i)
-    =\lim_{\Delta{t}\to{0}}\OverDeltaT{1}\pdv{V}{x}
-    =\lim_{\Delta{t}\to{0}}\frac{1}{\Delta{t}}\pdv{\SED[x_i(\tau)]}{x_i(\tau)}
-    =\fdv{\SE[x(t,\tau)]}{x(t,\tau)}
-\end{gather}
-
-Damit ist die kontinuierliche Lagevin-Gleichung:
-\begin{equation}
-    \implies\boxed{\pdv{x(t,\tau)}{\tau}=-\fdv{\SE[x(t,\tau)]}{x(t,\tau)}+\zeta(t,\tau)}
-\end{equation}
-
-
-Was ist nun $\frac{1}{\Delta{t}}\pdv{\SED}{x_i}$? \textrightarrow~siehe \textbf{C.2}
-\begin{equation}
-    \frac{1}{\Delta{t}}\pdv{\SED}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_j}{\dot{x}_j}\right)
-    =-m\ddot{x}_j+\partial_j{\mathrm{Potential}}
-\end{equation}
-
-Für unseren Fall ist dann die diskrete (in $t$ und $\tau$) Lagevin-Gleichung mit
-$x(t_l,\tau_i)=x_l^i$:
-\begin{equation}
-    \frac{x_l^{i+1}-x_l^i}{\Delta\tau}=m\frac{x_{l+1}^i-2\,x_l^i+x_{l-1}^i}{\left(\Delta{t}\right)^2}-\pdv{\mathrm{Potential}(x_l^i)}{x_l^i}+\sqrt{\frac{2}{\Delta{t}\,\Delta\tau}}\,R_l^i
-\end{equation}
-
-\subsection*{Notizen zum Rauschen}
-\begin{gather*}
-    \langle\zeta(t_i,\tau_m)\,\zeta(t_j,\tau_l)\rangle=2\,\delta(t_i-t_j)\,\delta(\tau_m-\tau_l)
+\section*{1.1 From Stochastic to Quantum Systems}
+The two equations giving a proper description of the desired fictitious
+stochastic system are the Langevin and the corresponding Fokker-Planck equation
+\todo{add reference}(A.18), which shall be given in the form needed for the
+simulation
+\begin{subequations}
+\begin{align}
+    \dv{x_i}{\tau}&=A_i+\zeta_i \\
+    \pdv{p}{\tau}&=-\OverDeltaT{1}\pdv{(A_i\,p)}{x_i}+\frac{1}{(\Delta{t})^2}\pdv[2]{p}{x_i}
     \\
-    \text{diskret}\longrightarrow\langle\zeta_i^m\,\zeta_j^l\rangle=2\frac{\delta_{ij}}{\Delta{t}}\frac{\delta_{ml}}{\Delta{\tau}}
-    \\
-    R_i^l\in\mathcal{N}(0,1)\qq{mit}\langle{R_i^m\,R_j^l}\rangle=\delta_{ij}\,\delta_{ml}
-    \implies \zeta_i^l=\sqrt{\frac{2}{\Delta{t}\,\Delta{\tau}}}\,R_i^l
+    \langle\zeta_i(\tau)\,\zeta_j(\tau')\rangle&=2\OverDeltaT{\deltaij}\delta(\tau-\tau')
+\end{align}
+\label{eq:stochsys}
+\end{subequations}
+with $\mathbf{A}\in\nReals$, the Gaussian noise $\mathbf{\zeta}\in\nReals$ and
+the dynamical variable $\mathbf{x}\in\nReals$.
+Those vectors are to be understood as $n$ sample points from the discrete time
+$t$ with
+\begin{equation*}
+    x_i(\tau)=x(\tau,t_i)\qc\Delta{t}=t_{i+1}-t_i\qc i=1,\dotsc,N
+\end{equation*}
+
+A stationary solution ($\partial_{\tau}p=0$) implies
+\begin{equation}
+    A_i\,p\,\Delta{t}=\partial_i{p}+\mathrm{const.}
+    \label{eq:stationaryp}
+\end{equation}
+where the constant is set to zero to ensure proper decay of $p$ in the infinite
+limit. Now let $\mathbf{A}$ be derived from some potential $U(\mathbf{x})$ via
+$A_i\,\Delta{t}=-\partial_i{U}$ which immediately results in a solution of
+the form
+\begin{equation}
+    p=c\,e^{-U(\mathbf{x})}
+\end{equation}
+
+In analogy to the derivation of the path integral, one takes the limit from the
+(finite dimensional) discretization of the time $t$ to a (infinite dimensional)
+continuous description via
+\begin{gather*}
+    \Delta{t}\to0\qc N\to\infty \\
+    x_i(\tau)\to x(\tau,t)
 \end{gather*}
+Then the system of ODEs in eq.~\eqref{eq:stochsys} becomes a partial differential
+equation holding for all $t$. Additionally, one has to take into account that
+the partial derivatives translate into a functional derivative via \todo{add
+citation}[Kis00]:
+\begin{equation}
+    \lim_{\Delta{t}\to0}\OverDeltaT{1}\pdv{\,\cdot}{x_i}=\fdv{\,\cdot}{x}
+    \label{eq:DiscreteFunctionalDerivative}
+\end{equation}
 
+Moreover it is important to adequately translate the correlation properly. In
+order for the Kronecker Delta \deltaij~to become a Delta function, one has to
+normalize them via $\deltaij/\Delta{t}$:
+\begin{equation}
+    \sum_{i=1}^{N}\OverDeltaT{\deltaij}\Delta{t}=1\to\int\dd{t}\delta(t-t')=1\qc\forall{j,t'}
+\end{equation}
+The correlation condition for the noise then becomes
+\begin{equation}
+    \langle\zeta(\tau,t)\,\zeta(\tau',t')\rangle=2\,\delta(t-t')\,\delta(\tau-\tau')
+\end{equation}
 
-\newpage
+Finally a new Langevin equation can be formulated with the potential
+$U(x)=\SE[x]$
+\begin{equation}
+    \pdv{x(\tau,t)}{\tau}=-\eval{\fdv{\SE[x]}{x}}_{x=x(\tau,t)}+\zeta(\tau,t)
+    \label{eq:SQMLangevin}
+\end{equation}
+and the corresponding functional Fokker-Planck equation is given by
+\begin{equation}
+    \pdv{p}{\tau}=-\fdv{x}\left[\left(-\fdv{\SE}{x}\right)p\right]+\fdv[2]{p}{x}
+\end{equation}
+with the stationary solution
+\begin{equation}
+    p\propto{e^{-\SE}}
+\end{equation}
+
+Now, how does one compute quantum mechanical expectation values? \ldots
 
 
 \subsubsection*{1.2.1 Parabolic Potential}
@@ -153,9 +173,32 @@ respect to $t_\mathrm{E}$ (for more details, \todo{link appears when using
 
 \section*{2 Numerical Approach and Discretization for 1-dimensional Quantum
 Mechanics}
-\dots Therefore consider a discretization of \todo{add reference}eq.~(1.6) in
-both the Euclidean time $t$ and the fictitious time $\tau$ (bearing in mind the
-notes \todo{see above}in~\ref{app:derivSE} and~\ref{app:deriv-discrete}):
+The key aspect for the SQM to succeed is the numeric implementation. Therefore
+consider the discretization of eq.~\eqref{eq:SQMLangevin} in both Euclidean
+time $t$ and fictitious time $\tau$. For the functional derivative remember
+eq.~\eqref{eq:DiscreteFunctionalDerivative} for a finite $\Delta{t}$, which
+yields together with eqs.~\eqref{eq:EuclideanEulerLagrange},
+\eqref{eq:DiscreteActionDerivative}:
+\begin{equation}
+    \frac{x_l^{i+1}-x_l^i}{\Delta\tau}=m\frac{x_{l+1}^i-2\,x_l^i+x_{l-1}^i}{\left(\Delta{t}\right)^2}-\pdv{V(x_l^i)}{x_l^i}+\sqrt{\frac{2}{\Delta{t}\,\Delta\tau}}\,R_l^i
+    \label{eq:DiscreteLangevin}
+\end{equation}
+with $x_l^i=x(\tau_i,t_l)$ where $l$ denotes the grid in $t$ with spacing
+$\Delta{t}$ and $i$ the grid in $\tau$.
+
+The noise is generated from $R^i_l\in\mathcal{N}(0,1)$, which fulfills
+$\langle{R^i_l}\,{R^j_m}\rangle=\delta_{ij}\,\delta_{lm}$. In order to fulfill
+the correlation condition
+\begin{equation*}
+    \langle\zeta(\tau,t)\,\zeta(\tau',t')\rangle=2\,\delta(\tau-\tau')\,\delta(t-t')
+    \xrightarrow{\mathrm{discrete}}
+    \langle\zeta^i_l\,\zeta^j_m\rangle=2\,\frac{\delta_{lm}}{\Delta\tau}\,\frac{\delta_{ij}}{\Delta{t}}
+\end{equation*}
+which is needed to obtain the correct equilibrium probability distribution, an
+additional prefactor is introduced, yielding
+$\zeta^i_l=\sqrt{\frac{2}{\Delta{\tau}\Delta{t}}}\,R^i_l$.
+
+Expectation values become \ldots
 
 \dots
 
@@ -182,6 +225,7 @@ Combining equation (\ref{eq:i}) and (\ref{eq:ii}) yields above expression.
 \dots
 
 
+\section*{4 Results}
 \subsection*{4.3 Problems with the double-well potential}
 When attempting to find the first energy gap of the double-well potential
 \begin{equation}
@@ -193,7 +237,7 @@ minima, one finds that the SQM-algorithm converges \emph{very} slowly (we were n
 able to obtain meaningful results during our investigation).
 
 Why is that so? At first recall, that the energy gap is computed via
-approximating the correlation function\todo{add reference to eq. 1.12 in the manual}
+approximating the correlation function\todo{add reference to eq.~1.12 in the manual}
 \begin{align*}
     \ev{x_0\,x_t}{0}&=\sum_{n}e^{-(E_n-E_0)\,t}\mel{0}{x_0}{n}\mel{n}{x_0}{0}
     \\&\approx{e^{-\Delta{E_1}\,t}}\abs{\mel{0}{x_0}{1}}^2
@@ -208,6 +252,7 @@ On the other hand -- from a numerical point of view -- the term
 \begin{equation*}
     x_l(\tau_{i+1})=x_l(\tau_i)-\pdv{V(x_l)}{x_l}\Delta\tau+\dotsb
 \end{equation*}
+in the discretized Langevin equation \eqref{eq:DiscreteLangevin}
 corresponds to a gradient descent, which means the algorithm samples the
 minimum of a given potential to find the lowest energy gap. Now the double-well
 potential has two minima, which both need to be sampled sufficiently in order
@@ -311,9 +356,8 @@ By comparison of \cref{eq:S} and \cref{eq:SE} it can be seen that the
 Lagrangian of the Wick rotated action has a different sign in front of it's
 potential, resulting in the following Euler-Lagrange-Equation:
 \begin{equation}
-    \boxed{%
-        \fdv{\SE}{x}=\pdv{L}{x}-\dv{\tE}\pdv{L}{\dot{x}}=-m\ddot{x}+\pdv{V}{x}
-    }
+    \boxed{\fdv{\SE}{x}=\pdv{L}{x}-\dv{\tE}\pdv{L}{\dot{x}}=-m\ddot{x}+\pdv{V}{x}}
+    \label{eq:EuclideanEulerLagrange}
 \end{equation}
 
 
@@ -356,6 +400,7 @@ The Kronecker $\delta$-s kill the sum, and we can write (pay attention to the in
 \end{align*}
 \begin{equation}
     \implies\boxed{\OverDeltaT{1}\dv{\SD}{x_j}=\pdv{L_j}{x_j}-\DT\left(\pdv{L_{j}}{\xdotj}\right)}
+    \label{eq:DiscreteActionDerivative}
 \end{equation}
 where $\DT(f_i)=\OverTwoDeltaT{f_{i+1}-f_{i-1}}$ is the discrete time derivation
 operator.
@@ -363,9 +408,8 @@ This is exactly what we wanted to achieve.
 
 For clarity, we make the transition back to the continuous description:
 \begin{equation}
-    \OverDeltaT{1}\dv{\SD}{x_j}
-    \quad\xrightarrow[\Delta{t}\to{0}]{}\quad
-    \fdv{\mathcal{S}[x]}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
+    \lim_{\Delta{t}\to0}\OverDeltaT{1}\dv{\SD}{x_j}
+    =\fdv{\mathcal{S}}{x}=\pdv{L}{x}-\dv{t}\pdv{L}{\dot{x}}
 \end{equation}
 which is the well known \emph{Euler-Lagrange-Equation}.
 
